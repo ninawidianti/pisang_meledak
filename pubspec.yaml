@@ -1,0 +1,46 @@
+name: pisang_meledak
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.18.0
+  url_launcher: ^6.1.5
+  http: ^0.13.3
+  image_picker: ^0.8.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+     - ./lib/assets/logo pisang meledak.png
+     - ./lib/assets/logo.png
+     - ./lib/assets/homepage1.png
+     - ./lib/assets/homepage2.png
+     - ./lib/assets/homepage3.png
+     - ./lib/assets/ilustrasi.png
+     - ./lib/assets/gambar1.jpg
+     - ./lib/assets/gambar2.jpg
+     - ./lib/assets/gambar3.jpg
+     - ./lib/assets/gambar4.jpg
+     - ./lib/assets/gambar5.jpg
+     - ./lib/assets/gambar6.jpg
+     - ./lib/assets/gambar7.jpg
+     - ./lib/assets/gambar8.jpg
+
+  # fonts:
+  #   - family: Poppins
+  #     fonts:
+  #       - asset: ./lib/fonts/Poppins-Regular.ttf
+  #       - asset: ./lib/fonts/Poppins-Bold.ttf
+  #         weight: 700
