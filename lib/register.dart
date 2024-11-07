@@ -18,7 +18,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordConfirmationController =
       TextEditingController();
+  // ignore: unused_field
   bool _isLoading = false;
+  // ignore: unused_field
   String _errorMessage = '';
 
   Future<void> register() async {
@@ -42,6 +44,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (response.statusCode == 200) {
         // Jika registrasi berhasil
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Pendaftaran berhasil!'),
@@ -51,6 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         // Navigasi ke halaman login
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(builder: (context) => const LoginPage()),
         );
@@ -102,11 +106,11 @@ class _RegisterPageState extends State<RegisterPage> {
               const Center(
                 // Center the text
                 child: Text(
-                  'Sign Up',
+                  'Register',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFF2A7C5B),
                   ),
                 ),
               ),
@@ -139,7 +143,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Nama Lengkap',
                     hintStyle: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
@@ -182,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Email',
                     hintStyle: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
@@ -229,7 +233,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     hintText: 'Masukkan No Hp',
                     hintStyle: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
@@ -272,7 +276,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Alamat',
                     hintStyle: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
@@ -316,7 +320,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Password',
                     hintStyle: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
@@ -360,7 +364,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Konfirmasi Password',
                     hintStyle: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
@@ -387,9 +391,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   onPressed: register, // Ubah menjadi register
                   child: const Text(
-                    'Sign in',
+                    'Register',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),

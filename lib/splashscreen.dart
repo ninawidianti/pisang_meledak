@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/login.dart';
-import 'package:pisang_meledak/customer/homepage.dart';
+import 'package:pisang_meledak/register.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,11 +15,10 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(
-      const Duration(seconds: 3), // Durasi tampilan splash screen
+      const Duration(seconds: 3), // Duration for the splash screen
       () => Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (BuildContext context) =>
-              const WelcomePage(), // Navigate to MainScreen
+          builder: (BuildContext context) => const WelcomePage(),
         ),
       ),
     );
@@ -36,7 +35,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
@@ -45,14 +43,13 @@ class WelcomePage extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background with a modern gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                   Color(0xFFFFE180),
-                   Color(0xFF67C4A7), // Soft teal
-                   Color(0xFFFFFFFF),// White
+                  Color(0xFFFFE180),
+                  Color(0xFF67C4A7),
+                  Color(0xFFFFFFFF),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -60,89 +57,106 @@ class WelcomePage extends StatelessWidget {
             ),
             child: CustomPaint(
               painter: CirclePainter(),
-              child: Container(), // Empty container to enable the painter
+              child: Container(),
             ),
           ),
-          // Content of the page
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
               children: <Widget>[
                 const Spacer(flex: 1),
-                // Welcome title
                 const Text(
                   'Pisang Meledak',
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
-                    color:  Color(0xFF2A7C5B), // Darker teal for title
+                    color: Color(0xFF2A7C5B),
+                    letterSpacing: 1.2,
+                    shadows: [
+                      Shadow(
+                        color: Color(0xFFFFFFFF),
+                        offset: Offset(1, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 10),
-                // Welcome tagline
-                const Text(
-                  'Ledakkan Mood mu, dengan Pisang Meledak!!',
-                  style: TextStyle(fontSize: 18, color: Colors.black87), // Dark black for tagline
-                  textAlign: TextAlign.center,
+                const SizedBox(height: 15),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment
+                      .center, // Center the text vertically if needed
+                  children: [
+                    Text(
+                      'Ledakkan Mood mu,',
+                      style: TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500,),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      'dengan Pisang Meledak!!',
+                      style: TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500,),
+                      textAlign: TextAlign.center,
+                    ),
+                       
+                  ],
                 ),
-                const Spacer(flex: 1), // Spacer to lift the login button higher
-                // Log in button, full width
+                const Spacer(flex: 1),
                 SizedBox(
-                  width: double.infinity, // Make the button full width
+                  width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      backgroundColor: const Color(0xFF2A7C5B), // Dark teal for button
+                      backgroundColor: const Color(0xFF2A7C5B),
                     ),
                     onPressed: () {
-                      // Navigate to the Login Page when button is pressed
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
                       );
                     },
                     child: const Text(
                       'Log in',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 30), // Adjust spacing below the login button
-                // Skip button positioned right below the login button
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to the Home Page when button is pressed
-                      Navigator.pushReplacement(
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(color: Color(0xFF2A7C5B)),
+                      ),
+                      backgroundColor: Colors.white.withOpacity(0.8),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const HomePage()),
+                        MaterialPageRoute(builder: (context) => const RegisterPage()),
                       );
                     },
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min, // Ensure the Row only takes up as much space as needed
-                      children: [
-                        Text(
-                          'Skip',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87, // Dark black for skip text
-                          ),
-                        ),
-                        SizedBox(width: 5), // Space between text and icon
-                        Icon(
-                          Icons.arrow_right_alt, // Icon for the arrow
-                          color: Colors.black87, // Dark black for icon
-                        ),
-                      ],
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        color: Color(0xFF2A7C5B),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 200), // Reduced the bottom padding
+                const SizedBox(height: 200),
               ],
             ),
           ),
@@ -152,20 +166,20 @@ class WelcomePage extends StatelessWidget {
   }
 }
 
-// CustomPainter to draw circular shapes in the background
+// CustomPainter for drawing circles in the background
 class CirclePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint1 = Paint()
-      ..color = const Color(0xFFFFFFFF).withOpacity(0.1) // Soft white circles
+      ..color = const Color(0xFFFFFFFF).withOpacity(0.1)
       ..style = PaintingStyle.fill;
 
     final paint2 = Paint()
-      ..color = const Color(0xFF67C4A7).withOpacity(0.1) // Soft teal circles
+      ..color = const Color(0xFF67C4A7).withOpacity(0.1)
       ..style = PaintingStyle.fill;
 
-        final paint3 = Paint()
-      ..color = const Color(0xFFFFE180).withOpacity(0.1) // Soft teal circles
+    final paint3 = Paint()
+      ..color = const Color(0xFFFFE180).withOpacity(0.1)
       ..style = PaintingStyle.fill;
 
     // Draw circles
@@ -173,7 +187,6 @@ class CirclePainter extends CustomPainter {
     canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.3), 200, paint2);
     canvas.drawCircle(Offset(size.width * 0.4, size.height * 0.5), 100, paint3);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.7), 250, paint2);
-
   }
 
   @override

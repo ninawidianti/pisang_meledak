@@ -1,10 +1,10 @@
-import 'dart:io'; // Import for File (only for non-web)
-import 'package:flutter/foundation.dart'; // Import for platform checking
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'listproduct.dart'; // Import your ListProduct screen
+import 'package:http/http.dart' as http;
+import 'package:pisang_meledak/admin/produk/listproduct.dart';
 
 class AddProduct extends StatefulWidget {
+  // ignore: use_super_parameters
   const AddProduct({Key? key}) : super(key: key);
 
   @override
@@ -15,60 +15,103 @@ class _AddProductState extends State<AddProduct> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  // ignore: non_constant_identifier_names
+  final TextEditingController _image_urlController = TextEditingController();
   String _errorMessage = '';
-  XFile? _image; // Variable to hold the selected image
+  // ignore: unused_field
+  bool _isLoading = false; 
+  
+  // Function to send the product data to the backend
+  Future<void> _saveProduct() async {
+    setState(() {
+      _isLoading = true;  // Show loading indicator
+      _errorMessage = '';  // Clear any previous error message
+    });
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    _image = await picker.pickImage(source: ImageSource.gallery);
-    setState(() {}); // Refresh the UI to show the selected image
-  }
+    const String apiUrl = 'http://127.0.0.1:8000/api/products/create'; // Replace with your backend URL
 
-  void _saveProduct() {
-    // Logic to save the product
+    // Validation
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _descriptionController.text.isEmpty ||
-        _image == null) {
+        _image_urlController.text.isEmpty) {
       setState(() {
         _errorMessage = 'Semua field harus diisi!';
+        _isLoading = false;  // Stop loading
       });
-    } else {
+      return;
+    }
+
+    try {
+      // Prepare the data to send
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': _nameController.text,
+          'price': double.parse(_priceController.text),  // Assuming the price is a number
+          'description': _descriptionController.text,
+          'image_url': _image_urlController.text,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        // If the server returns a 201 CREATED response, then the product was successfully created
+        final responseData = json.decode(response.body);
+        // ignore: avoid_print
+        print('Product created: $responseData');
+
+        // Clear the input fields after saving
+        _nameController.clear();
+        _priceController.clear();
+        _descriptionController.clear();
+        _image_urlController.clear();
+
+        // Show success message
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Produk berhasil ditambahkan!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Navigate back to the ListProduct screen
+        Navigator.pushAndRemoveUntil(
+          // ignore: use_build_context_synchronously
+          context,
+          MaterialPageRoute(builder: (context) => const ListProduct()),
+          (route) => false,  // Remove all previous routes
+        );
+      } else {
+        // If the server returns an error, show the error message
+        setState(() {
+          _errorMessage = 'Gagal menambahkan produk. Status Code: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
       setState(() {
-        _errorMessage = '';
+        _errorMessage = 'Terjadi kesalahan: $e';
       });
-
-      // Implement save logic here (e.g., send to API or save locally)
-      print('Product saved: ${_nameController.text}, ${_priceController.text}, ${_descriptionController.text}, Image: ${_image!.path}');
-
-      // Clear the input fields after saving
-      _nameController.clear();
-      _priceController.clear();
-      _descriptionController.clear();
-      _image = null;
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Produk berhasil ditambahkan!'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-
-      // Navigate back to the ListProduct screen
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const ListProduct()),
-        (route) => false, // Remove all previous routes
-      );
+    } finally {
+      setState(() {
+        _isLoading = false;  // Stop loading
+      });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Produk'),
+        title: const Text(
+          'Tambah Produk',
+          style: TextStyle(fontSize: 18),
+        ),
         backgroundColor: const Color(0xFF67C4A7),
       ),
       body: Padding(
@@ -86,7 +129,7 @@ class _AddProductState extends State<AddProduct> {
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -104,7 +147,10 @@ class _AddProductState extends State<AddProduct> {
                   controller: _nameController,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Nama Produk',
-                    hintStyle: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -116,7 +162,7 @@ class _AddProductState extends State<AddProduct> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               const Text(
                 'Harga',
                 style: TextStyle(
@@ -125,7 +171,7 @@ class _AddProductState extends State<AddProduct> {
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -144,7 +190,10 @@ class _AddProductState extends State<AddProduct> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Harga',
-                    hintStyle: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -156,7 +205,7 @@ class _AddProductState extends State<AddProduct> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               const Text(
                 'Deskripsi',
                 style: TextStyle(
@@ -165,7 +214,7 @@ class _AddProductState extends State<AddProduct> {
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -184,7 +233,10 @@ class _AddProductState extends State<AddProduct> {
                   maxLines: 4,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Deskripsi',
-                    hintStyle: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -196,7 +248,7 @@ class _AddProductState extends State<AddProduct> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               const Text(
                 'Gambar',
                 style: TextStyle(
@@ -205,30 +257,51 @@ class _AddProductState extends State<AddProduct> {
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black, width: 1),
-                  ),
-                  child: _image == null
-                      ? const Center(
-                          child: Text(
-                            'Pilih Gambar',
-                            style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.normal),
-                          ),
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: kIsWeb
-                              ? Image.network(_image!.path, fit: BoxFit.cover) // For Web
-                              : Image.file(File(_image!.path), fit: BoxFit.cover), // For mobile or desktop
+              const SizedBox(height: 5),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Text Field for URL input with styled container
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
                         ),
-                ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller:
+                          _image_urlController, // Use this controller to retrieve the URL
+                      decoration: const InputDecoration(
+                        hintText: 'https://example.com/image.jpg',
+                        hintStyle: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.normal),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 15,
+                        ),
+                      ),
+                      keyboardType: TextInputType
+                          .url, // Ensures the keyboard is suitable for URLs
+                      onChanged: (value) {
+                        // Optionally, you can add logic to validate the URL
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
               const SizedBox(height: 20),
               if (_errorMessage.isNotEmpty)
@@ -245,10 +318,12 @@ class _AddProductState extends State<AddProduct> {
               Center(
                 child: ElevatedButton(
                   onPressed: _saveProduct,
+                  // ignore: sort_child_properties_last
                   child: const Text('Simpan'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF67C4A7), // Button color
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),

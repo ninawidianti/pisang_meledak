@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
+  // ignore: use_super_parameters
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -17,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   String _errorMessage = '';
+
 
   Future<void> login() async {
     setState(() {
@@ -46,21 +48,30 @@ class _LoginPageState extends State<LoginPage> {
         var data = json.decode(response.body);
 
         if (data['access_token'] != null) {
+          // ignore: avoid_print
           print('Login successful, Token: ${data['access_token']}');
           
           // Mengecek role dari user
           String role = data['user']['role'];
+          String userName = data['user']['name']; // Menyimpan nama pengguna
+
           if (role == 'admin') {
             // Jika role admin, navigasi ke HomePage2 (admin)
             Navigator.pushReplacement(
+              // ignore: use_build_context_synchronously
               context,
-              MaterialPageRoute(builder: (context) => const HomePage2()),
+              MaterialPageRoute(
+                builder: (context) => HomePage2(userName: userName),
+              ),
             );
           } else if (role == 'customer') {
             // Jika role customer, navigasi ke HomePage (customer)
             Navigator.pushReplacement(
+              // ignore: use_build_context_synchronously
               context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
+              MaterialPageRoute(
+                builder: (context) => HomePage(userName: userName),
+              ),
             );
           }
         } else {
@@ -136,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                   controller: _emailController,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Email',
-                    hintStyle: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -176,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Password',
-                    hintStyle: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -215,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text(
                           'Log in',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -241,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                          text: 'Sign Up',
+                          text: 'Register',
                           style: TextStyle(
                             color: Color(0xFF2A7C5B),
                           ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:pisang_meledak/admin/produk/listproduct.dart';
-import 'splashscreen.dart'; 
+import 'package:pisang_meledak/splashscreen.dart';
+//import 'package:pisang_meledak/admin/homepage2.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Pastikan semua binding Flutter sudah diinisialisasi
@@ -8,6 +8,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  // ignore: use_super_parameters
   const MyApp({Key? key}) : super(key: key); // Tambahkan konstruktor dengan key opsional
 
   @override
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
           titleSmall: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
-      home: const SplashScreen(), 
+      home:  const SplashScreen(), 
     );
   }
 }

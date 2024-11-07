@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// ignore: use_key_in_widget_constructors
 class ListPengguna extends StatefulWidget {
   @override
+  // ignore: library_private_types_in_public_api
   _ListPenggunaState createState() => _ListPenggunaState();
 }
 
@@ -25,7 +27,9 @@ class _ListPenggunaState extends State<ListPengguna>
     final response =
         await http.get(Uri.parse('http://127.0.0.1:8000/api/users'));
 
+    // ignore: avoid_print
     print('Status code: ${response.statusCode}');
+    // ignore: avoid_print
     print('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
@@ -45,6 +49,7 @@ class _ListPenggunaState extends State<ListPengguna>
             .toList();
       });
     } else {
+      // ignore: avoid_print
       print('Gagal mengambil data');
     }
   }

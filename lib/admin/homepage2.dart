@@ -1,16 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:pisang_meledak/admin/keuangan/manajemenkeuangan.dart';
 import 'package:pisang_meledak/admin/pengguna/listpengguna.dart';
 import 'package:pisang_meledak/admin/produk/listproduct.dart';
+import 'package:pisang_meledak/admin/stokbahan/liststokbahan.dart';
+import 'package:pisang_meledak/customer/akun/akuncustomer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage2 extends StatefulWidget {
-  const HomePage2({super.key});
+  final String userName;
+
+  // ignore: use_super_parameters
+  const HomePage2({Key? key, required this.userName}) : super(key: key);
 
   @override
   State<HomePage2> createState() => _HomePage2State();
 }
 
 class _HomePage2State extends State<HomePage2> {
+  TextEditingController searchController = TextEditingController();
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        break;
+      case 1:
+        break;
+      case 2:
+        break;
+      case 3:
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => AkunCustomer()));
+        break;
+    }
+  }
+
   Widget _buildCategoryIcon(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap, // Menambahkan aksi saat ditekan
@@ -102,7 +130,7 @@ class _HomePage2State extends State<HomePage2> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Container(
@@ -120,40 +148,60 @@ class _HomePage2State extends State<HomePage2> {
                   ),
                 ),
                 child: Row(
+                  // Menggunakan Row untuk menempatkan ilustrasi dan teks
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
+                      // Menggunakan Expanded untuk menempatkan teks dan tombol di sisi kiri
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Padding(
-                            padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+                            padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
                             child: Text(
-                              'Ayo Buruan Order Pisang Meledak!!',
+                              'Jln. Dr.Moh Hatta, Binuang Kp.Dalam',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 14, // Adjusted font size
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                               textAlign: TextAlign.left,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                            child: Text(
+                              'Nomor WhatsApp yang di gunakan sekarang :',
+                              style: TextStyle(
+                                fontSize: 10, // Adjusted font size
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                          const SizedBox(
+                              height:
+                                  4), // Spacing between the address and the button
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                             child: ElevatedButton(
                               onPressed: () {
+                                // Open WhatsApp
                                 String url =
-                                    "https://wa.me/6281372114967"; // Ganti dengan nomor WhatsApp Anda
+                                    "https://wa.me/6281372114967"; // Replace with your WhatsApp number
+                                // ignore: deprecated_member_use
                                 launch(url);
                               },
+                              // ignore: sort_child_properties_last
                               child: const Text(
-                                'Hubungi Sekarang',
+                                '+6281372114967',
                                 style: TextStyle(color: Colors.white),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2A7C5B),
+                                backgroundColor:
+                                    const Color(0xFF2A7C5B).withOpacity(0.5), // Green color
                                 elevation: 0,
                               ),
                             ),
@@ -161,10 +209,12 @@ class _HomePage2State extends State<HomePage2> {
                         ],
                       ),
                     ),
+                    // Menambahkan ilustrasi di sebelah kanan
                     Padding(
-                      padding: const EdgeInsets.only(right: 16),
+                      padding: const EdgeInsets.only(
+                          right: 16), // Spasi antara teks dan gambar
                       child: Image.asset(
-                        './lib/assets/ilustrasi.png', // Ganti dengan path gambar Anda
+                        './lib/assets/ilustrasi.png',
                         height: 70,
                         width: 70,
                         fit: BoxFit.cover,
@@ -178,7 +228,7 @@ class _HomePage2State extends State<HomePage2> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'Category',
+                'Kategori',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -202,7 +252,10 @@ class _HomePage2State extends State<HomePage2> {
                     //tambahkan
                   }),
                   _buildCategoryIcon(Icons.inventory, 'Bahan Baku', () {
-                    // Tambahkan aksi navigasi untuk Bahan Baku
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ListStokBahan()),
+                    );
                   }),
                   _buildCategoryIcon(Icons.person_search, 'Pengguna', () {
                     Navigator.push(
@@ -212,7 +265,11 @@ class _HomePage2State extends State<HomePage2> {
                   }),
                   _buildCategoryIcon(Icons.account_balance_wallet, 'Keuangan',
                       () {
-                    // Tambahkan aksi navigasi untuk Keuangan
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ManajemenKeuangan()),
+                    );
                   }),
                 ],
               ),
@@ -222,6 +279,8 @@ class _HomePage2State extends State<HomePage2> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
           BottomNavigationBarItem(

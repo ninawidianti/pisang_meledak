@@ -12,7 +12,11 @@ dependencies:
   intl: ^0.18.0
   url_launcher: ^6.1.5
   http: ^0.13.3
-  image_picker: ^0.8.6
+  image_picker: ^0.8.6  
+  fl_chart: ^0.69.0
+  shared_preferences: ^2.0.8
+  path_provider: ^2.1.2
+  pdf: ^3.11.1
 
 dev_dependencies:
   flutter_test:
