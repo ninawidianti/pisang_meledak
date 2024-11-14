@@ -12,7 +12,7 @@ class ProfileMenuItem extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  ProfileMenuItem({
+  const ProfileMenuItem({super.key, 
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -61,6 +61,7 @@ class _AkunCustomerState extends State<AkunCustomer> {
       // Navigate to homepage if not logged in
       // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(
+          // ignore: use_build_context_synchronously
           context, '/homepage'); // Replace with your route
     }
   }

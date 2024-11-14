@@ -1,10 +1,14 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pisang_meledak/admin/stokbahan/addstokbahan.dart';
 
+// ignore: use_key_in_widget_constructors
 class ListStokBahan extends StatefulWidget {
   @override
+  // ignore: library_private_types_in_public_api
   _ListStokBahanState createState() => _ListStokBahanState();
 }
 
@@ -231,8 +235,8 @@ class _ListStokBahanState extends State<ListStokBahan> {
             MaterialPageRoute(builder: (context) => const AddStokBahan()),
           );
         },
-        child: const Icon(Icons.add),
         backgroundColor: const Color(0xFF67C4A7),
+        child: const Icon(Icons.add),
       ),
     );
   }

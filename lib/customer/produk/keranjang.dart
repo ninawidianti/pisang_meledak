@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pisang_meledak/customer/produk/pembayaran.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class CartPage extends StatefulWidget {
-  // ignore: use_super_parameters
   const CartPage({Key? key}) : super(key: key);
 
   @override
@@ -54,6 +54,31 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
+  void navigateToPaymentPage() {
+    // Ambil produk dan jumlah yang dipilih
+    List<String> productIds = [];
+    List<int> quantities = [];
+
+    for (int index in checkedItems) {
+      productIds.add(
+          cartItems[index].name); // Gantilah ini dengan ID produk yang sesuai
+      quantities.add(cartItems[index].quantity);
+    }
+
+    double totalPrice = calculateTotalPrice(); // Hitung total harga
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PembayaranPage(
+          productIds: productIds,
+          quantities: quantities,
+          totalPrice: totalPrice,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,63 +93,65 @@ class _CartPageState extends State<CartPage> {
         elevation: 0,
       ),
       body: ListView.builder(
-        itemCount: cartItems.length,
-        itemBuilder: (context, index) {
-          final item = cartItems[index];
-          final formattedPrice = formatter.format(item.price);
+          itemCount: cartItems.length,
+          itemBuilder: (context, index) {
+            final item = cartItems[index];
+            final formattedPrice = formatter.format(item.price);
 
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  // Checkbox untuk cek produk
-                  Checkbox(
-                    value: checkedItems.contains(index),
-                    onChanged: (bool? value) {
-                      setState(() {
-                        if (value == true) {
-                          checkedItems.add(index);
-                        } else {
-                          checkedItems.remove(index);
-                        }
-                      });
-                    },
-                  ),
-                  // Gambar produk dan deskripsi
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Image.network(item.imageUrl,
-                            width: 60, height: 60, fit: BoxFit.cover),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.normal)),
-                            Text('Rp $formattedPrice',
-                                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                            Text('x${item.quantity}',
-                                style: const TextStyle(fontSize: 16, color: Colors.grey)),
-                          ],
-                        ),
-                      ],
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    // Checkbox untuk cek produk
+                    Checkbox(
+                      value: checkedItems.contains(index),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            checkedItems.add(index);
+                          } else {
+                            checkedItems.remove(index);
+                          }
+                        });
+                      },
                     ),
-                  ),
-                  // Tombol hapus
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => removeItem(index),
-                  ),
-                ],
+                    // Gambar produk dan deskripsi
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Image.network(item.image_url,
+                              width: 60, height: 60, fit: BoxFit.cover),
+                          const SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(item.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.normal)),
+                              Text('Rp $formattedPrice',
+                                  style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold)),
+                              Text('x${item.quantity}',
+                                  style: const TextStyle(
+                                      fontSize: 16, color: Colors.grey)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Tombol hapus
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => removeItem(index),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          }),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -148,15 +175,25 @@ class _CartPageState extends State<CartPage> {
             // Tombol Pembayaran
             ElevatedButton(
               onPressed: () {
-                // Implementasi logika pembayaran di sini
+                if (checkedItems.isNotEmpty) {
+                  navigateToPaymentPage(); // Panggil fungsi untuk navigasi ke halaman pembayaran
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text("Silakan pilih item untuk dibayar")),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.green,
+                backgroundColor: const Color(0xFF67C4A7),
+                minimumSize: const Size.fromHeight(50), // Atur tinggi tombol
               ),
-              child: const Text('Pembayaran',
-                  style: TextStyle(fontSize: 16, color: Colors.white)),
-            ),
+              child: const Text(
+                'Pembayaran',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            )
           ],
         ),
       ),
@@ -165,13 +202,13 @@ class _CartPageState extends State<CartPage> {
 }
 
 class CartItem {
-  final String imageUrl;
+  final String image_url;
   final String name;
   final double price;
   final int quantity;
 
   CartItem({
-    required this.imageUrl,
+    required this.image_url,
     required this.name,
     required this.price,
     required this.quantity,
@@ -179,7 +216,7 @@ class CartItem {
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
-      imageUrl: json['imageUrl'],
+      image_url: json['image_url'],
       name: json['name'],
       price: json['price'],
       quantity: json['quantity'],
@@ -188,7 +225,7 @@ class CartItem {
 
   Map<String, dynamic> toJson() {
     return {
-      'imageUrl': imageUrl,
+      'image_url': image_url,
       'name': name,
       'price': price,
       'quantity': quantity,

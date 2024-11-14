@@ -1,27 +1,25 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pisang_meledak/customer/produk/keranjang.dart';
+import 'package:pisang_meledak/customer/produk/pembayaran.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailProduct extends StatefulWidget {
-  // ignore: non_constant_identifier_names
-  final String image_url; // This should still hold the path for local assets
+  final String image_url; // Menggunakan camelCase untuk konsistensi
   final String name;
   final String price;
   final String description;
   final int numberOfPurchases;
 
   const DetailProduct({
-    super.key,
-    // ignore: non_constant_identifier_names
+    Key? key,
     required this.image_url,
     required this.name,
     required this.price,
     required this.description,
     required this.numberOfPurchases,
-  });
+  }) : super(key: key);
 
   @override
   State<DetailProduct> createState() => _DetailProductState();
@@ -29,9 +27,7 @@ class DetailProduct extends StatefulWidget {
 
 class _DetailProductState extends State<DetailProduct> {
   bool _isFavorite = false;
-  int _quantity = 1; // Initialize the quantity with 1
-  List<CartItem> cartItems =
-      []; // List untuk menampung item yang ditambahkan ke keranjang
+  int _quantity = 1; // Inisialisasi jumlah dengan 1
 
   @override
   Widget build(BuildContext context) {
@@ -61,18 +57,17 @@ class _DetailProductState extends State<DetailProduct> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section
+            // Bagian Gambar
             Container(
               height: 300,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(
-                      widget.image_url), // Use NetworkImage for URLs
+                  image: NetworkImage(widget.image_url), // Gunakan NetworkImage untuk URL
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            // Product Title and Favorite Button
+            // Judul Produk dan Tombol Favorit
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -100,7 +95,7 @@ class _DetailProductState extends State<DetailProduct> {
                 ],
               ),
             ),
-            // Price and Purchases Count
+            // Harga dan Jumlah Terjual
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Row(
@@ -121,7 +116,7 @@ class _DetailProductState extends State<DetailProduct> {
               ),
             ),
             const SizedBox(height: 20),
-            // Product Description
+            // Deskripsi Produk
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -144,12 +139,12 @@ class _DetailProductState extends State<DetailProduct> {
               ),
             ),
             const SizedBox(height: 20),
-            // Quantity Selector and Add to Cart Button
+            // Pemilih Jumlah dan Tombol Tambah ke Keranjang
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  // Quantity Selector
+                  // Pemilih Jumlah
                   Row(
                     children: [
                       IconButton(
@@ -177,13 +172,12 @@ class _DetailProductState extends State<DetailProduct> {
                     ],
                   ),
                   const SizedBox(width: 16),
-                  // Add to Cart Button
+                  // Tombol Tambah ke Keranjang
                   ElevatedButton(
                     onPressed: () async {
-                      // Muat item keranjang yang sudah ada
                       final prefs = await SharedPreferences.getInstance();
-                      String? cartData = prefs.getString('cartItems');
                       List<CartItem> cartItems = [];
+                      final cartData = prefs.getString('cartItems');
 
                       if (cartData != null) {
                         List<dynamic> jsonList = jsonDecode(cartData);
@@ -192,28 +186,23 @@ class _DetailProductState extends State<DetailProduct> {
                             .toList();
                       }
 
-                      // Tambahkan item baru
                       cartItems.add(
                         CartItem(
-                          imageUrl: widget.image_url,
+                          image_url: widget.image_url,
                           name: widget.name,
                           price: double.parse(widget.price),
                           quantity: _quantity,
                         ),
                       );
 
-                      // Simpan ulang keranjang ke SharedPreferences
                       prefs.setString(
                           'cartItems',
                           jsonEncode(
                               cartItems.map((item) => item.toJson()).toList()));
 
-                      // Tampilkan pesan konfirmasi
-                      // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content:
-                              Text('Produk berhasil ditambahkan ke keranjang'),
+                          content: Text('Produk berhasil ditambahkan ke keranjang'),
                         ),
                       );
                     },
@@ -224,29 +213,36 @@ class _DetailProductState extends State<DetailProduct> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: const Text('Masukkan ke keranjang'),
+                    child: const Text('Masukkan ke keranjang', style: TextStyle(color: Colors.white),),
                   ),
 
-                  const SizedBox(width: 16), // Spacing between buttons
-                  // Buy Now Button
+                  const SizedBox(width: 16), // Jarak antara tombol
+                  // Tombol Beli Sekarang
                   OutlinedButton(
                     onPressed: () {
-                      // Logic to buy now
+                      final totalPrice = double.parse(widget.price) * _quantity;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PembayaranPage(
+                            productIds: [widget.name], // Menggunakan nama produk sebagai ID
+                            quantities: [_quantity], // Menggunakan jumlah yang dipilih
+                            totalPrice: totalPrice,
+                          ),
+                        ),
+                      );
                     },
-                    // ignore: sort_child_properties_last
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFBFBFBF)),
+                      backgroundColor: Colors.white,
+                      minimumSize: const Size(150, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
                     child: const Text(
                       'Beli Sekarang',
-                      style: TextStyle(color: Colors.black87), // Text color
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                          color: Color(0xFFBFBFBF)), // Border color
-                      backgroundColor: Colors.white, // Button background color
-                      minimumSize: const Size(150, 48), // Button size
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Rounded corners
-                      ),
+                      style: TextStyle(color: Colors.black87),
                     ),
                   ),
                 ],
