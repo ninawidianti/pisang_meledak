@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pisang_meledak/admin/produk/listproduct.dart';
+import 'package:pisang_meledak/service/auth_service.dart';
 
 class AddProduct extends StatefulWidget {
   // ignore: use_super_parameters
@@ -23,85 +24,85 @@ class _AddProductState extends State<AddProduct> {
   
   // Function to send the product data to the backend
   Future<void> _saveProduct() async {
+  setState(() {
+    _isLoading = true;  // Show loading indicator
+    _errorMessage = '';  // Clear any previous error message
+  });
+
+  const String apiUrl = 'http://127.0.0.1:8000/api/products/create'; // Replace with your backend URL
+
+  // Validation
+  if (_nameController.text.isEmpty ||
+      _priceController.text.isEmpty ||
+      _descriptionController.text.isEmpty ||
+      _image_urlController.text.isEmpty) {
     setState(() {
-      _isLoading = true;  // Show loading indicator
-      _errorMessage = '';  // Clear any previous error message
+      _errorMessage = 'Semua field harus diisi!';
+      _isLoading = false;  // Stop loading
     });
+    return;
+  }
 
-    const String apiUrl = 'http://127.0.0.1:8000/api/products/create'; // Replace with your backend URL
+  try {
+    final token = await AuthService().getToken(); // Ambil token dari AuthService
 
-    // Validation
-    if (_nameController.text.isEmpty ||
-        _priceController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        _image_urlController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Semua field harus diisi!';
-        _isLoading = false;  // Stop loading
-      });
-      return;
-    }
+    // Prepare the data to send
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token', // Sertakan token dalam header
+      },
+      body: jsonEncode({
+        'name': _nameController.text,
+        'price': double.parse(_priceController.text),  // Assuming the price is a number
+        'description': _descriptionController.text,
+        'image_url': _image_urlController.text,
+      }),
+    );
 
-    try {
-      // Prepare the data to send
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'name': _nameController.text,
-          'price': double.parse(_priceController.text),  // Assuming the price is a number
-          'description': _descriptionController.text,
-          'image_url': _image_urlController.text,
-        }),
+    if (response.statusCode == 201) {
+      // If the server returns a 201 CREATED response, then the product was successfully created
+      final responseData = json.decode(response.body);
+      print('Product created: $responseData');
+
+      // Clear the input fields after saving
+      _nameController.clear();
+      _priceController.clear();
+      _descriptionController.clear();
+      _image_urlController.clear();
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Produk berhasil ditambahkan!'),
+          duration: Duration(seconds: 2),
+        ),
       );
 
-      if (response.statusCode == 201) {
-        // If the server returns a 201 CREATED response, then the product was successfully created
-        final responseData = json.decode(response.body);
-        // ignore: avoid_print
-        print('Product created: $responseData');
-
-        // Clear the input fields after saving
-        _nameController.clear();
-        _priceController.clear();
-        _descriptionController.clear();
-        _image_urlController.clear();
-
-        // Show success message
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Produk berhasil ditambahkan!'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-
-        // Navigate back to the ListProduct screen
-        Navigator.pushAndRemoveUntil(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(builder: (context) => const ListProduct()),
-          (route) => false,  // Remove all previous routes
-        );
-      } else {
-        // If the server returns an error, show the error message
-        setState(() {
-          _errorMessage = 'Gagal menambahkan produk. Status Code: ${response.statusCode}';
-        });
-      }
-    } catch (e) {
+      // Navigate back to the ListProduct screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const ListProduct()),
+        (route) => false,  // Remove all previous routes
+      );
+    } else {
+      // If the server returns an error, show the error message
       setState(() {
-        _errorMessage = 'Terjadi kesalahan: $e';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;  // Stop loading
+        _errorMessage = 'Gagal menambahkan produk. Status Code: ${response.statusCode}';
       });
     }
+  } catch (e) {
+    setState(() {
+      _errorMessage = 'Terjadi kesalahan: $e';
+    });
+  } finally {
+    setState(() {
+      _isLoading = false;  // Stop loading
+    });
   }
+}
 
 
   @override

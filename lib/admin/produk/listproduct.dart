@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:pisang_meledak/service/auth_service.dart';
 import 'addproduct.dart'; // Pastikan untuk mengimpor file AddProduct
 
 class ListProduct extends StatefulWidget {
@@ -26,9 +27,12 @@ class _ListProductState extends State<ListProduct> {
 
   Future<void> fetchProducts() async {
     final url = Uri.parse('http://127.0.0.1:8000/api/products');
+    final token = await AuthService().getToken(); // Ambil token dari AuthService
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(url, headers: {
+        'Authorization': 'Bearer $token', // Sertakan token dalam header
+      });
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -72,24 +76,29 @@ class _ListProductState extends State<ListProduct> {
   }
 
   Future<void> _editProduct(int id, String name, double price, String description, String imageUrl) async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/products/$id');
-    final response = await http.put(
-      url,
-      body: json.encode({
-        'name': name,
-        'price': price,
-        'description': description,
-        'image_url': imageUrl, // Include image_url if needed
-      }),
-      headers: {"Content-Type": "application/json"},
-    );
+  final url = Uri.parse('http://127.0.0.1:8000/api/products/$id');
+  final token = await AuthService().getToken(); // Ambil token dari AuthService
 
-    if (response.statusCode == 200) {
-      fetchProducts(); // Refresh list after editing
-    } else {
-      print('Failed to update product');
-    }
+  final response = await http.put(
+    url,
+    body: json.encode({
+      'name': name,
+      'price': price,
+      'description': description,
+      'image_url': imageUrl, // Include image_url if needed
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': 'Bearer $token', // Sertakan token dalam header
+    },
+  );
+
+  if (response.statusCode == 200) {
+    fetchProducts(); // Refresh list after editing
+  } else {
+    print('Failed to update product: ${response.statusCode} ${response.body}');
   }
+}
 
   void _showEditProductDialog(Map<String, dynamic> product) {
     TextEditingController nameController = TextEditingController(text: product['name']);
@@ -151,48 +160,50 @@ class _ListProductState extends State<ListProduct> {
   }
 
   void _deleteProduct(int index) {
- // Show confirmation dialog before deleting the product
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Konfirmasi Penghapusan"),
-          content: const Text("Apakah Anda yakin ingin menghapus produk ini?"),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Batal"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text("Hapus"),
-              onPressed: () {
-                final productId = products[index]['id'];
-                final url = Uri.parse('http://127.0.0.1:8000/api/products/$productId');
+  // Show confirmation dialog before deleting the product
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Konfirmasi Penghapusan"),
+        content: const Text("Apakah Anda yakin ingin menghapus produk ini?"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Batal"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text("Hapus"),
+            onPressed: () async {
+              final productId = products[index]['id'];
+              final url = Uri.parse('http://127.0.0.1:8000/api/products/$productId');
+              final token = await AuthService().getToken(); // Ambil token dari AuthService
 
-                http.delete(url).then((response) {
-                  if (response.statusCode == 200) {
-                    setState(() {
-                      products.removeAt(index);
-                    });
-                  } else {
-                    print('Failed to delete the product');
-                  }
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop(); // Close the dialog
-                }).catchError((error) {
-                  print('Error: $error');
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop(); // Close the dialog if there's an error
+              final response = await http.delete(
+                url,
+                headers: {
+                  'Authorization': 'Bearer $token', // Sertakan token dalam header
+                },
+              );
+
+              if (response.statusCode == 200) {
+                setState(() {
+                  products.removeAt(index);
                 });
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+              } else {
+                print('Failed to delete the product: ${response.statusCode} ${response.body}');
+              }
+              // Tutup dialog konfirmasi
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void _addProduct() {
     Navigator.push(

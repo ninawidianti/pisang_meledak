@@ -1,122 +1,161 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter/material.dart';
+import 'package:pisang_meledak/service/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pisang_meledak/customer/akun/setting.dart';
 
-class ProfileMenuItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const ProfileMenuItem({super.key, 
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
+class AccountPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.grey),
-      title: Text(title),
-      subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey)),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-      onTap: onTap,
-    );
-  }
+  _AccountPageState createState() => _AccountPageState();
 }
 
-// ignore: use_key_in_widget_constructors
-class AkunCustomer extends StatefulWidget {
-  @override
-  // ignore: library_private_types_in_public_api
-  _AkunCustomerState createState() => _AkunCustomerState();
-}
-
-class _AkunCustomerState extends State<AkunCustomer> {
-  String name = '';
-  String email = '';
-  String alamat = '';
-  // ignore: non_constant_identifier_names
-  String no_hp = '';
+class _AccountPageState extends State<AccountPage> {
+  final AuthService _authService = AuthService();
+  String? userName = "User";
+  String? userEmail = "user@example.com";
 
   @override
   void initState() {
     super.initState();
-    checkLoginStatus(); // Check login status
+    _loadUserData();
   }
 
-  Future<void> checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? isLoggedIn = prefs.getBool('isLoggedIn');
-
-    if (isLoggedIn == true) {
-      fetchUserData(); // Fetch user data if logged in
-    } else {
-      // Navigate to homepage if not logged in
-      // ignore: use_build_context_synchronously
-      Navigator.pushReplacementNamed(
-          // ignore: use_build_context_synchronously
-          context, '/homepage'); // Replace with your route
-    }
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('user_name') ?? "User";
+      userEmail = prefs.getString('user_email') ?? "user@example.com";
+    });
   }
 
-  Future<void> fetchUserData() async {
-    final loginResponse = await http.post(
-      Uri.parse('http://127.0.0.1:8000/api/login'),
-      body: {
-        'email': 'user@example.com', // Replace with actual user email
-        'password': 'password123', // Replace with actual user password
+  void _confirmLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Konfirmasi Logout"),
+          content: Text("Apakah Anda yakin ingin keluar?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("Tidak"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("Iya"),
+            ),
+          ],
+        );
       },
     );
 
-    if (loginResponse.statusCode == 200) {
-      final loginData = jsonDecode(loginResponse.body);
+    if (shouldLogout == true) {
+      await _logout();
+    }
+  }
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString(
-          'token', loginData['token']); // Simpan token di SharedPreferences
+  Future<void> _logout() async {
+    await _authService.logout();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
-      String userId = loginData['user']['id'];
-      String token = loginData['token'];
+  void _openSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SettingsPage(name: userName!, email: userEmail!),
+      ),
+    );
+  }
 
-      // Fetch user details using user ID
-      final userResponse = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/users/$userId'),
-        headers: {
-          'Authorization': 'Bearer $token', // Send token if required
-        },
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Akun Saya"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Halo, $userName", style: TextStyle(fontSize: 24)),
+            Divider(height: 30, thickness: 1),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Pengaturan"),
+              subtitle: Text("Edit profil dan notifikasi"),
+              trailing: Icon(Icons.arrow_forward_ios),
+              onTap: _openSettings,
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text("Logout"),
+              subtitle: Text("Keluar Dari Akun"),
+              trailing: Icon(Icons.arrow_forward_ios),
+              onTap: _confirmLogout,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsPage extends StatefulWidget {
+  final String name;
+  final String email;
+
+  const SettingsPage({Key? key, required this.name, required this.email}) : super(key: key);
+
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool salesNotifications = true;
+  bool newArrivalsNotifications = false;
+  bool statusDeliveryNotifications = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.name;
+    _emailController.text = widget.email;
+  }
+
+  Future<void> _saveChanges() async {
+    final response = await http.put(
+      Uri.parse('http://127.0.0.1:8000/api/users'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', _nameController.text);
+      await prefs.setString('user_email', _emailController.text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Profil berhasil diperbarui")),
       );
-
-      if (userResponse.statusCode == 200) {
-        final userData = jsonDecode(userResponse.body);
-        setState(() {
-          name = userData['name'] ?? 'No Name';
-          email = userData['email'] ?? 'No Email';
-          alamat = userData['alamat'] ?? 'No Address';
-          no_hp = userData['no_hp'] ?? 'No Phone Number';
-        });
-      } else {
-        setState(() {
-          name = 'Error fetching user data';
-          email = 'Error fetching user data';
-          alamat = 'Error fetching user data';
-          no_hp = 'Error fetching user data';
-        });
-      }
     } else {
-      setState(() {
-        name = 'Error logging in';
-        email = 'Error logging in';
-        alamat = 'Error logging in';
-        no_hp = 'Error logging in';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal memperbarui profil")),
+      );
     }
   }
 
@@ -124,75 +163,81 @@ class _AkunCustomerState extends State<AkunCustomer> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Akun Saya',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
+        title: Text("Pengaturan"),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting Message
-            Text(
-              'Hello, $name',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text('Personal Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: "Nama",
+                border: OutlineInputBorder(),
+              ),
             ),
-            const Divider(thickness: 1),
-            const SizedBox(height: 16),
-            // Profile Menu Items
-            ProfileMenuItem(
-              icon: Icons.settings,
-              title: 'Pengaturan',
-              subtitle: 'Password',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        SettingsPage(name: name, email: email),
-                  ),
-                );
+            SizedBox(height: 10),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: "Email",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text('Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: "************",
+                suffixText: 'Change',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text('Notifications', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SwitchListTile(
+              title: Text('Sales'),
+              value: salesNotifications,
+              onChanged: (bool value) {
+                setState(() {
+                  salesNotifications = value;
+                });
               },
             ),
-            ProfileMenuItem(
-              icon: Icons.logout,
-              title: 'Logout',
-              subtitle: 'Keluar Dari Akun',
-              onTap: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                String? token = prefs
-                    .getString('token'); // Ambil token dari SharedPreferences
-
-                if (token != null) {
-                  final response = await http.post(
-                    Uri.parse('http://127.0.0.1:8000/api/logout'),
-                    headers: {
-                      'Authorization': 'Bearer $token',
-                      'Content-Type': 'application/json',
-                    },
-                  );
-
-                  if (response.statusCode == 200) {
-                    await prefs.remove('token');
-                    await prefs.setBool('isLoggedIn', false);
-
-                    // ignore: use_build_context_synchronously
-                    Navigator.pushReplacementNamed(context, '/login');
-                  } else {
-                    print('Logout gagal: ${response.body}');
-                  }
-                } else {
-                  print('Token tidak ditemukan.');
-                }
+            SwitchListTile(
+              title: Text('New arrivals'),
+              value: newArrivalsNotifications,
+              onChanged: (bool value) {
+                setState(() {
+                  newArrivalsNotifications = value;
+                });
               },
+            ),
+            SwitchListTile(
+              title: Text('Status Delivery'),
+              value: statusDeliveryNotifications,
+              onChanged: (bool value) {
+                setState(() {
+                  statusDeliveryNotifications = value;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _saveChanges,
+              child: Text("Simpan"),
             ),
           ],
         ),

@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:pisang_meledak/customer/produk/keranjang.dart';
+import 'package:pisang_meledak/service/api_service.dart';
+import 'package:pisang_meledak/service/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PembayaranPage extends StatefulWidget {
-  final List<String> productIds; // ID produk yang dipilih
-  final List<int> quantities; // Jumlah produk yang dipilih
+  final List<CartItem> cartItems; // Menggunakan CartItem untuk mendapatkan ID produk
   final double totalPrice;
 
   const PembayaranPage({
     Key? key,
-    required this.productIds,
-    required this.quantities,
+    required this.cartItems, // Menggunakan CartItem
     required this.totalPrice,
   }) : super(key: key);
 
@@ -25,67 +27,129 @@ class _PembayaranPageState extends State<PembayaranPage> {
   String selectedDeliveryMethod = 'Diantar';
   TextEditingController addressController = TextEditingController();
 
-  void createOrder() async {
-    final url = Uri.parse('http://localhost:8000/api/orders'); // Ganti dengan URL yang sesuai
+  void processPayment() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = await AuthService().getToken(); // Ambil token dari AuthService
 
-    final response = await http.post(url, body: {
-      'product_id': json.encode(widget.productIds), // Mengirimkan daftar ID produk
-      'quantity': json.encode(widget.quantities), // Mengirimkan daftar jumlah
-    });
+    // Ambil data user
+    final userResponse = await ApiService().getUserProfile();
+    String userId = '';
 
-    print('Order Response status: ${response.statusCode}'); // Log status
-    print('Order Response body: ${response.body}'); // Log body
+    if (userResponse.statusCode == 200) {
+      final userData = json.decode(userResponse.body);
+      userId = userData['id'].toString(); // Sesuaikan dengan struktur respons
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Gagal mengambil data pengguna")));
+      return;
+    }
+
+    // Pertama, kita buat order
+    final url = Uri.parse('http://127.0.0.1:8000/api/orders');
+
+    print('Membuat order...');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Sertakan token dalam header
+      },
+      body: json.encode({
+        'user_id': userId, // Gunakan user_id yang didapat dari API
+        'payment_method': selectedPaymentMethod,
+        'delivery_method': selectedDeliveryMethod,
+        'address': selectedDeliveryMethod == 'Diantar' ? addressController.text : '',
+        'total_price': widget.totalPrice.toString(),
+      }),
+    );
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
 
     if (response.statusCode == 201) {
       final orderData = json.decode(response.body);
-      final orderId = orderData['data']['id']; // Ambil ID order yang baru dibuat
-      processPayment(orderId); // Panggil fungsi untuk memproses pembayaran
+      final orderId = orderData['id'];
+
+      // Kemudian, kita simpan item pesanan
+      for (int i = 0; i < widget.cartItems.length; i++) {
+        final item = widget.cartItems[i];
+        print('Mengirim item pesanan:');
+        print('Order ID: $orderId');
+        print('Product ID: ${item.id}'); // Menggunakan ID produk dari CartItem
+        print('Quantity: ${item.quantity}');
+
+        final orderItemUrl = Uri.parse('http://127.0.0.1:8000/api/order-items');
+        final orderItemResponse = await http.post(orderItemUrl, headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Sertakan token dalam header
+        }, body: json.encode({
+          'order_id': orderId.toString(),
+          'product_id': item.id.toString(), // Menggunakan ID produk dari CartItem
+          'quantity': item.quantity.toString(),
+          'price': (widget.totalPrice / widget.cartItems .length).toString(),
+        }));
+
+        print('Order Item Response status: ${orderItemResponse.statusCode}');
+        print('Order Item Response body: ${orderItemResponse.body}');
+
+        if (orderItemResponse.statusCode != 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Gagal menyimpan item pesanan")));
+          return;
+        }
+      }
+
+      // Jika semua item pesanan berhasil disimpan, tampilkan snackbar dan navigasi ke CartPage
+      _showSuccessSnackbar();
     } else {
       // Gagal membuat order
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal membuat order")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Gagal membuat order")));
     }
   }
 
-  void processPayment(int orderId) async {
-    final url = Uri.parse('http://localhost:8000/api/orders/$orderId/payment'); // Ganti dengan URL yang sesuai
+  void _showSuccessSnackbar() {
+    final snackBar = SnackBar(
+      content: const Text('Pesanan Anda sedang diproses!'),
+      duration: const Duration(seconds: 2),
+    );
 
-    final response = await http.post(url, body: {
-      'payment_method': selectedPaymentMethod,
-      'delivery_method': selectedDeliveryMethod,
-      'address': selectedDeliveryMethod == 'Diantar' ? addressController.text : '',
-      'total_price': widget.totalPrice.toString(),
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    // Navigasi ke CartPage setelah snackbar ditampilkan
+    Future.delayed(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const CartPage()),
+      );
     });
+  }
 
-    print('Payment Response status: ${response.statusCode}'); // Log status
-    print('Payment Response body: ${response.body}'); // Log body
-
-    if (response.statusCode == 201) {
-      // Pembayaran berhasil
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 60),
-              SizedBox(height: 16),
-              Text("Pesanan Anda akan segera diproses"),
-            ],
-          ),
+  void _showConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Pembayaran'),
+          content: const Text('Apakah Anda yakin ingin melanjutkan pembayaran?'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.popUntil(context, ModalRoute.withName('/'));
+                Navigator.of(context).pop(); // Menutup dialog
               },
-              child: const Text("OK"),
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+                processPayment(); // Memproses pembayaran
+              },
+              child: const Text('Ya'),
             ),
           ],
-        ),
-      );
-    } else {
-      // Pembayaran gagal
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal memproses pembayaran")));
-    }
+        );
+      },
+    );
   }
 
   @override
@@ -131,13 +195,15 @@ class _PembayaranPageState extends State<PembayaranPage> {
               title: const Text('Bank Transfer'),
               value: 'Bank Transfer',
               groupValue: selectedPaymentMethod,
-              onChanged: (value) => setState(() => selectedPaymentMethod = value.toString()),
+              onChanged: (value) =>
+                  setState(() => selectedPaymentMethod = value.toString()),
             ),
             RadioListTile(
               title: const Text('Cash'),
               value: 'Cash',
               groupValue: selectedPaymentMethod,
-              onChanged: (value) => setState(() => selectedPaymentMethod = value.toString()),
+              onChanged: (value) =>
+                  setState(() => selectedPaymentMethod = value.toString()),
             ),
             const SizedBox(height: 20),
             if (selectedPaymentMethod == 'Bank Transfer')
@@ -152,13 +218,15 @@ class _PembayaranPageState extends State<PembayaranPage> {
               title: const Text('Diantar'),
               value: 'Diantar',
               groupValue: selectedDeliveryMethod,
-              onChanged: (value) => setState(() => selectedDeliveryMethod = value.toString()),
+              onChanged: (value) =>
+                  setState(() => selectedDeliveryMethod = value.toString()),
             ),
             RadioListTile(
               title: const Text('Jemput Sendiri'),
               value: 'Jemput Sendiri',
               groupValue: selectedDeliveryMethod,
-              onChanged: (value) => setState(() => selectedDeliveryMethod = value.toString()),
+              onChanged: (value) =>
+                  setState(() => selectedDeliveryMethod = value.toString()),
             ),
             if (selectedDeliveryMethod == 'Diantar')
               TextField(
@@ -178,7 +246,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
               ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: createOrder, // Mengubah fungsi untuk membuat order
+              onPressed: _showConfirmationDialog, // Menampilkan dialog konfirmasi
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF67C4A7),
                 minimumSize: const Size(double.infinity, 56),

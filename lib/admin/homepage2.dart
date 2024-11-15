@@ -34,7 +34,7 @@ class _HomePage2State extends State<HomePage2> {
         break;
       case 3:
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AkunCustomer()));
+            context, MaterialPageRoute(builder: (context) => AccountPage()));
         break;
     }
   }

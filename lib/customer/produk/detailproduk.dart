@@ -6,6 +6,7 @@ import 'package:pisang_meledak/customer/produk/pembayaran.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailProduct extends StatefulWidget {
+  final int id; // Menambahkan id produk
   final String image_url; // Menggunakan camelCase untuk konsistensi
   final String name;
   final String price;
@@ -14,6 +15,7 @@ class DetailProduct extends StatefulWidget {
 
   const DetailProduct({
     Key? key,
+    required this.id, // Tambahkan id ke parameter
     required this.image_url,
     required this.name,
     required this.price,
@@ -141,7 +143,7 @@ class _DetailProductState extends State<DetailProduct> {
             const SizedBox(height: 20),
             // Pemilih Jumlah dan Tombol Tambah ke Keranjang
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   // Pemilih Jumlah
@@ -192,6 +194,7 @@ class _DetailProductState extends State<DetailProduct> {
                           name: widget.name,
                           price: double.parse(widget.price),
                           quantity: _quantity,
+                          id: widget.id,
                         ),
                       );
 
@@ -225,8 +228,15 @@ class _DetailProductState extends State<DetailProduct> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => PembayaranPage(
-                            productIds: [widget.name], // Menggunakan nama produk sebagai ID
-                            quantities: [_quantity], // Menggunakan jumlah yang dipilih
+                            cartItems: [
+                              CartItem(
+                                image_url: widget.image_url,
+                                name: widget.name,
+                                price: double.parse(widget.price),
+                                quantity: _quantity,
+                                id: widget.id,
+                              ),
+                            ],
                             totalPrice: totalPrice,
                           ),
                         ),

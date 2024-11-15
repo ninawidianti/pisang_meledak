@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pisang_meledak/customer/produk/pembayaran.dart';
+import 'package:pisang_meledak/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -15,6 +17,8 @@ class _CartPageState extends State<CartPage> {
   List<CartItem> cartItems = [];
   final formatter = NumberFormat('#,###', 'id_ID');
   Set<int> checkedItems = {};
+  bool isLoading = true; // Tambahkan variabel loading
+  bool isError = false; // Tambahkan variabel error
 
   @override
   void initState() {
@@ -29,6 +33,11 @@ class _CartPageState extends State<CartPage> {
       List<dynamic> jsonList = jsonDecode(cartData);
       setState(() {
         cartItems = jsonList.map((item) => CartItem.fromJson(item)).toList();
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false; // Stop loading when there's no cart data
       });
     }
   }
@@ -40,8 +49,30 @@ class _CartPageState extends State<CartPage> {
     await prefs.setString('cartItems', cartData);
   }
 
+  Future<void> removeItemFromServer(int index) async {
+    final token = await AuthService().getToken(); // Ambil token dari AuthService
+    final itemId = cartItems[index].id; // Gantilah ini dengan ID produk yang sesuai
+
+    final url = Uri.parse('http://127.0.0.1:8000/api/cart/remove/$itemId'); // Ganti dengan URL yang sesuai
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Item removed from server');
+    } else {
+      print('Failed to remove item from server: ${response.statusCode}');
+    }
+  }
+
   void removeItem(int index) {
     setState(() {
+      removeItemFromServer(index); // Hapus dari server
       cartItems.removeAt(index);
       saveCartItems();
     });
@@ -55,24 +86,19 @@ class _CartPageState extends State<CartPage> {
   }
 
   void navigateToPaymentPage() {
-    // Ambil produk dan jumlah yang dipilih
-    List<String> productIds = [];
-    List<int> quantities = [];
+    List<CartItem> selectedItems = [];
 
     for (int index in checkedItems) {
-      productIds.add(
-          cartItems[index].name); // Gantilah ini dengan ID produk yang sesuai
-      quantities.add(cartItems[index].quantity);
+      selectedItems.add(cartItems[index]); // Menggunakan CartItem
     }
 
-    double totalPrice = calculateTotalPrice(); // Hitung total harga
+    double totalPrice = calculateTotalPrice();
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PembayaranPage(
-          productIds: productIds,
-          quantities: quantities,
+          cartItems: selectedItems, // Mengirimkan item yang dipilih
           totalPrice: totalPrice,
         ),
       ),
@@ -81,6 +107,14 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (isError) {
+      return Center(child: Text('Terjadi kesalahan saat memuat data keranjang.'));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Keranjang Saya',
@@ -104,7 +138,6 @@ class _CartPageState extends State<CartPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
                   children: [
-                    // Checkbox untuk cek produk
                     Checkbox(
                       value: checkedItems.contains(index),
                       onChanged: (bool? value) {
@@ -117,7 +150,6 @@ class _CartPageState extends State<CartPage> {
                         });
                       },
                     ),
-                    // Gambar produk dan deskripsi
                     Expanded(
                       child: Row(
                         children: [
@@ -142,7 +174,6 @@ class _CartPageState extends State<CartPage> {
                         ],
                       ),
                     ),
-                    // Tombol hapus
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () => removeItem(index),
@@ -157,7 +188,6 @@ class _CartPageState extends State<CartPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Tampilkan Total Harga
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -172,11 +202,10 @@ class _CartPageState extends State<CartPage> {
               ],
             ),
             const SizedBox(height: 10),
-            // Tombol Pembayaran
             ElevatedButton(
               onPressed: () {
                 if (checkedItems.isNotEmpty) {
-                  navigateToPaymentPage(); // Panggil fungsi untuk navigasi ke halaman pembayaran
+                  navigateToPaymentPage();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -187,7 +216,7 @@ class _CartPageState extends State<CartPage> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: const Color(0xFF67C4A7),
-                minimumSize: const Size.fromHeight(50), // Atur tinggi tombol
+                minimumSize: const Size.fromHeight(50),
               ),
               child: const Text(
                 'Pembayaran',
@@ -206,12 +235,14 @@ class CartItem {
   final String name;
   final double price;
   final int quantity;
+  final int id; // Tambahkan id produk
 
   CartItem({
     required this.image_url,
     required this.name,
     required this.price,
     required this.quantity,
+    required this.id, // Tambahkan id ke konstruktor
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
@@ -220,6 +251,7 @@ class CartItem {
       name: json['name'],
       price: json['price'],
       quantity: json['quantity'],
+      id: json['id'], // Ambil id dari JSON
     );
   }
 
@@ -229,6 +261,7 @@ class CartItem {
       'name': name,
       'price': price,
       'quantity': quantity,
+      'id': id, // Sertakan id saat menyimpan ke JSON
     };
   }
 }

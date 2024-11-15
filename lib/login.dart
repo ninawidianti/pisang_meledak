@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pisang_meledak/customer/homepage.dart'; // Import untuk homepage customer
-import 'package:pisang_meledak/admin/homepage2.dart'; // Import untuk homepage admin
+import 'package:pisang_meledak/customer/homepage.dart'; // Import for customer homepage
+import 'package:pisang_meledak/admin/homepage2.dart'; // Import for admin homepage
 import 'register.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
-  // ignore: use_super_parameters
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -19,14 +19,14 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   String _errorMessage = '';
 
-
+  // Login function with token storage
   Future<void> login() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
-    // Cek apakah field email dan password kosong
+    // Check if email and password fields are empty
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() {
         _isLoading = false;
@@ -48,26 +48,27 @@ class _LoginPageState extends State<LoginPage> {
         var data = json.decode(response.body);
 
         if (data['access_token'] != null) {
-          // ignore: avoid_print
+          // Save token in SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('access_token', data['access_token']);
+
+          // Print success and token
           print('Login successful, Token: ${data['access_token']}');
           
-          // Mengecek role dari user
+          // Check the user's role
           String role = data['user']['role'];
-          String userName = data['user']['name']; // Menyimpan nama pengguna
+          String userName = data['user']['name']; // Save user's name
 
+          // Navigate to respective homepage based on role
           if (role == 'admin') {
-            // Jika role admin, navigasi ke HomePage2 (admin)
             Navigator.pushReplacement(
-              // ignore: use_build_context_synchronously
               context,
               MaterialPageRoute(
                 builder: (context) => HomePage2(userName: userName),
               ),
             );
           } else if (role == 'customer') {
-            // Jika role customer, navigasi ke HomePage (customer)
             Navigator.pushReplacement(
-              // ignore: use_build_context_synchronously
               context,
               MaterialPageRoute(
                 builder: (context) => HomePage(userName: userName),
@@ -152,10 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 15,
-                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   ),
                 ),
               ),
@@ -192,10 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 15,
-                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   ),
                 ),
               ),

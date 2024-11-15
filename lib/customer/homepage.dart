@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:pisang_meledak/customer/akun/akuncustomer.dart';
 import 'package:pisang_meledak/customer/produk/detailproduk.dart';
 import 'package:pisang_meledak/customer/produk/keranjang.dart';
+import 'package:pisang_meledak/service/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,10 +37,14 @@ class _HomePageState extends State<HomePage> {
     final url = Uri.parse('http://127.0.0.1:8000/api/products');
 
     try {
+      final token =
+          await AuthService().getToken(); // Ambil token dari AuthService
+
       final response = await http.get(
         url,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Sertakan token dalam header
         },
       );
 
@@ -67,7 +72,6 @@ class _HomePageState extends State<HomePage> {
             isError = true;
             isLoading = false;
           });
-          // ignore: avoid_print
           print('Error: ${jsonResponse['message']}');
         }
       } else {
@@ -75,7 +79,6 @@ class _HomePageState extends State<HomePage> {
           isError = true;
           isLoading = false;
         });
-        // ignore: avoid_print
         print('Error: Status code ${response.statusCode}');
       }
     } catch (e) {
@@ -83,7 +86,6 @@ class _HomePageState extends State<HomePage> {
         isError = true;
         isLoading = false;
       });
-      // ignore: avoid_print
       print('Exception: $e');
     }
   }
@@ -105,7 +107,7 @@ class _HomePageState extends State<HomePage> {
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AkunCustomer()),
+          MaterialPageRoute(builder: (context) => AccountPage()),
         );
         break;
     }
@@ -125,6 +127,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildProductCard(
       // ignore: non_constant_identifier_names
+      int id,
       String image_url,
       String name,
       String price,
@@ -138,11 +141,12 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
             builder: (context) => DetailProduct(
+              id: id, // Pastikan Anda memiliki variable id di sini
               image_url: image_url,
               name: name,
               price: price,
               description: description,
-              numberOfPurchases: 0,
+              numberOfPurchases: 0, // Atau ganti dengan data yang sesuai
             ),
           ),
         );
@@ -454,6 +458,7 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, index) {
                             final product = filteredProducts[index];
                             return _buildProductCard(
+                              product['id'],
                               product['image_url'],
                               product['name'],
                               product['price'],
