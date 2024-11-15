@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/customer/homepage.dart'; // Import for customer homepage
 import 'package:pisang_meledak/admin/homepage2.dart'; // Import for admin homepage
@@ -7,6 +9,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
+  // ignore: use_super_parameters
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -53,6 +56,7 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setString('access_token', data['access_token']);
 
           // Print success and token
+          // ignore: avoid_print
           print('Login successful, Token: ${data['access_token']}');
           
           // Check the user's role

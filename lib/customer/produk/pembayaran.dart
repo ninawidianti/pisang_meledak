@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:pisang_meledak/customer/homepage.dart';
 import 'dart:convert';
 import 'package:pisang_meledak/customer/produk/keranjang.dart';
 import 'package:pisang_meledak/service/api_service.dart';
@@ -11,6 +14,7 @@ class PembayaranPage extends StatefulWidget {
   final List<CartItem> cartItems; // Menggunakan CartItem untuk mendapatkan ID produk
   final double totalPrice;
 
+  // ignore: use_super_parameters
   const PembayaranPage({
     Key? key,
     required this.cartItems, // Menggunakan CartItem
@@ -28,6 +32,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
   TextEditingController addressController = TextEditingController();
 
   void processPayment() async {
+    // ignore: unused_local_variable
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = await AuthService().getToken(); // Ambil token dari AuthService
 
@@ -109,9 +114,10 @@ class _PembayaranPageState extends State<PembayaranPage> {
   }
 
   void _showSuccessSnackbar() {
-    final snackBar = SnackBar(
-      content: const Text('Pesanan Anda sedang diproses!'),
-      duration: const Duration(seconds: 2),
+    // ignore: prefer_const_declarations
+    final snackBar = const SnackBar(
+      content: Text('Pesanan Anda sedang diproses!'),
+      duration: Duration(seconds: 2),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -120,7 +126,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const CartPage()),
+        MaterialPageRoute(builder: (context) => const HomePage(userName: '',)),
       );
     });
   }

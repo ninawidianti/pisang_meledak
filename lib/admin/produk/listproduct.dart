@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -27,7 +27,8 @@ class _ListProductState extends State<ListProduct> {
 
   Future<void> fetchProducts() async {
     final url = Uri.parse('http://127.0.0.1:8000/api/products');
-    final token = await AuthService().getToken(); // Ambil token dari AuthService
+    final token =
+        await AuthService().getToken(); // Ambil token dari AuthService
 
     try {
       final response = await http.get(url, headers: {
@@ -75,36 +76,43 @@ class _ListProductState extends State<ListProduct> {
     }
   }
 
-  Future<void> _editProduct(int id, String name, double price, String description, String imageUrl) async {
-  final url = Uri.parse('http://127.0.0.1:8000/api/products/$id');
-  final token = await AuthService().getToken(); // Ambil token dari AuthService
+  Future<void> _editProduct(int id, String name, double price,
+      String description, String imageUrl) async {
+    final url = Uri.parse('http://127.0.0.1:8000/api/products/$id');
+    final token =
+        await AuthService().getToken(); // Ambil token dari AuthService
 
-  final response = await http.put(
-    url,
-    body: json.encode({
-      'name': name,
-      'price': price,
-      'description': description,
-      'image_url': imageUrl, // Include image_url if needed
-    }),
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': 'Bearer $token', // Sertakan token dalam header
-    },
-  );
+    final response = await http.put(
+      url,
+      body: json.encode({
+        'name': name,
+        'price': price,
+        'description': description,
+        'image_url': imageUrl, // Include image_url if needed
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': 'Bearer $token', // Sertakan token dalam header
+      },
+    );
 
-  if (response.statusCode == 200) {
-    fetchProducts(); // Refresh list after editing
-  } else {
-    print('Failed to update product: ${response.statusCode} ${response.body}');
+    if (response.statusCode == 200) {
+      fetchProducts(); // Refresh list after editing
+    } else {
+      print(
+          'Failed to update product: ${response.statusCode} ${response.body}');
+    }
   }
-}
 
   void _showEditProductDialog(Map<String, dynamic> product) {
-    TextEditingController nameController = TextEditingController(text: product['name']);
-    TextEditingController priceController = TextEditingController(text: product['price']);
-    TextEditingController descriptionController = TextEditingController(text: product['description']);
-    TextEditingController imageUrlController = TextEditingController(text: product['image_url']); // New controller for image URL
+    TextEditingController nameController =
+        TextEditingController(text: product['name']);
+    TextEditingController priceController =
+        TextEditingController(text: product['price']);
+    TextEditingController descriptionController =
+        TextEditingController(text: product['description']);
+    TextEditingController imageUrlController = TextEditingController(
+        text: product['image_url']); // New controller for image URL
 
     showDialog(
       context: context,
@@ -125,7 +133,8 @@ class _ListProductState extends State<ListProduct> {
               ),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Deskripsi Produk'),
+                decoration:
+                    const InputDecoration(labelText: 'Deskripsi Produk'),
               ),
               TextField(
                 controller: imageUrlController, // New input for image URL
@@ -160,50 +169,60 @@ class _ListProductState extends State<ListProduct> {
   }
 
   void _deleteProduct(int index) {
-  // Show confirmation dialog before deleting the product
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text("Konfirmasi Penghapusan"),
-        content: const Text("Apakah Anda yakin ingin menghapus produk ini?"),
-        actions: <Widget>[
-          TextButton(
-            child: const Text("Batal"),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text("Hapus"),
-            onPressed: () async {
-              final productId = products[index]['id'];
-              final url = Uri.parse('http://127.0.0.1:8000/api/products/$productId');
-              final token = await AuthService().getToken(); // Ambil token dari AuthService
+    // Tampilkan dialog konfirmasi sebelum menghapus produk
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi Penghapusan"),
+          content: const Text("Apakah Anda yakin ingin menghapus produk ini?"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Batal"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog jika batal
+              },
+            ),
+            TextButton(
+              child: const Text("Hapus"),
+              onPressed: () async {
+                final productId = products[index]['id']; // Ambil ID produk
+                final url =
+                    Uri.parse('http://127.0.0.1:8000/api/products/$productId');
+                final token = await AuthService()
+                    .getToken(); // Ambil token dari AuthService
 
-              final response = await http.delete(
-                url,
-                headers: {
-                  'Authorization': 'Bearer $token', // Sertakan token dalam header
-                },
-              );
+                final response = await http.delete(
+                  url,
+                  headers: {
+                    'Authorization':
+                        'Bearer $token', // Sertakan token dalam header
+                  },
+                );
 
-              if (response.statusCode == 200) {
-                setState(() {
-                  products.removeAt(index);
-                });
-              } else {
-                print('Failed to delete the product: ${response.statusCode} ${response.body}');
-              }
-              // Tutup dialog konfirmasi
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+                if (response.statusCode == 200) {
+                  setState(() {
+                    products.removeAt(index); // Hapus produk dari daftar
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Produk berhasil dihapus")),
+                  );
+                } else {
+                  print(
+                      'Gagal menghapus produk: ${response.statusCode} ${response.body}');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Gagal menghapus produk")),
+                  );
+                }
+                // Tutup dialog konfirmasi
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _addProduct() {
     Navigator.push(
@@ -214,7 +233,8 @@ class _ListProductState extends State<ListProduct> {
 
   Widget _buildProductCard(Map<String, dynamic> product, int index) {
     final formatter = NumberFormat('#,###', 'id_ID');
-    final formattedPrice = formatter.format(int.tryParse(product['price']) ?? 0);
+    final formattedPrice =
+        formatter.format(int.tryParse(product['price']) ?? 0);
 
     return Card(
       elevation: 2,
@@ -337,7 +357,7 @@ class _ListProductState extends State<ListProduct> {
         onPressed: _addProduct,
         tooltip: 'Tambah Produk',
         // ignore: sort_child_properties_last
-        child:  const Icon(Icons.add),
+        child: const Icon(Icons.add),
         backgroundColor: const Color(0xFF67C6A3),
       ),
     );

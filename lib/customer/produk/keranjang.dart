@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pisang_meledak/customer/produk/pembayaran.dart';
@@ -7,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CartPage extends StatefulWidget {
+  // ignore: use_super_parameters
   const CartPage({Key? key}) : super(key: key);
 
   @override
@@ -50,10 +53,13 @@ class _CartPageState extends State<CartPage> {
   }
 
   Future<void> removeItemFromServer(int index) async {
-    final token = await AuthService().getToken(); // Ambil token dari AuthService
-    final itemId = cartItems[index].id; // Gantilah ini dengan ID produk yang sesuai
+    final token =
+        await AuthService().getToken(); // Ambil token dari AuthService
+    final itemId =
+        cartItems[index].id; // Gantilah ini dengan ID produk yang sesuai
 
-    final url = Uri.parse('http://127.0.0.1:8000/api/cart/remove/$itemId'); // Ganti dengan URL yang sesuai
+    final url = Uri.parse(
+        'http://127.0.0.1:8000/api/cart/remove/$itemId'); // Ganti dengan URL yang sesuai
 
     final response = await http.delete(
       url,
@@ -108,11 +114,12 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (isError) {
-      return Center(child: Text('Terjadi kesalahan saat memuat data keranjang.'));
+      return const Center(
+          child: Text('Terjadi kesalahan saat memuat data keranjang.'));
     }
 
     return Scaffold(
@@ -217,6 +224,10 @@ class _CartPageState extends State<CartPage> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: const Color(0xFF67C4A7),
                 minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(4.0), // Mengatur radius menjadi 4.0
+                ),
               ),
               child: const Text(
                 'Pembayaran',

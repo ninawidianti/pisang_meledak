@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, avoid_print
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -99,7 +101,10 @@ class _HomePageState extends State<HomePage> {
       case 0:
         break;
       case 1:
-        // Navigate to Orders Page (if you have one)
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CartPage()),
+        );
         break;
       case 2:
         // Navigate to History Page (if you have one)
@@ -126,7 +131,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildProductCard(
-      // ignore: non_constant_identifier_names
       int id,
       String image_url,
       String name,
@@ -245,17 +249,17 @@ class _HomePageState extends State<HomePage> {
               color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CartPage(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.shopping_cart, color: Colors.black),
-          ),
+          // IconButton(
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => const CartPage(),
+          //       ),
+          //     );
+          //   },
+          //   icon: const Icon(Icons.shopping_cart, color: Colors.black),
+          // ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.notifications, color: Colors.black),
@@ -477,8 +481,8 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_checkout_outlined),
-              label: 'Pesanan'),
+              icon: Icon(Icons.shopping_cart),
+              label: 'Keranjang'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),
         ],

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +15,7 @@ class DetailProduct extends StatefulWidget {
   final String description;
   final int numberOfPurchases;
 
+  // ignore: use_super_parameters
   const DetailProduct({
     Key? key,
     required this.id, // Tambahkan id ke parameter

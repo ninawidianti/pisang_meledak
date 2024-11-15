@@ -1,11 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// ignore: use_key_in_widget_constructors
 class AccountPage extends StatefulWidget {
   @override
+  // ignore: library_private_types_in_public_api
   _AccountPageState createState() => _AccountPageState();
 }
 
@@ -33,16 +37,16 @@ class _AccountPageState extends State<AccountPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Konfirmasi Logout"),
-          content: Text("Apakah Anda yakin ingin keluar?"),
+          title: const Text("Konfirmasi Logout"),
+          content: const Text("Apakah Anda yakin ingin keluar?"),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text("Tidak"),
+              child: const Text("Tidak"),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text("Iya"),
+              child: const Text("Iya"),
             ),
           ],
         );
@@ -72,9 +76,9 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Akun Saya"),
+        title: const Text("Akun Saya"),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -83,20 +87,20 @@ class _AccountPageState extends State<AccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Halo, $userName", style: TextStyle(fontSize: 24)),
-            Divider(height: 30, thickness: 1),
+            Text("Halo, $userName", style: const TextStyle(fontSize: 24)),
+            const Divider(height: 30, thickness: 1),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Pengaturan"),
-              subtitle: Text("Edit profil dan notifikasi"),
-              trailing: Icon(Icons.arrow_forward_ios),
+              leading: const Icon(Icons.settings),
+              title: const Text("Pengaturan"),
+              subtitle: const Text("Edit profil dan notifikasi"),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: _openSettings,
             ),
             ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text("Logout"),
-              subtitle: Text("Keluar Dari Akun"),
-              trailing: Icon(Icons.arrow_forward_ios),
+              leading: const Icon(Icons.exit_to_app),
+              title: const Text("Logout"),
+              subtitle: const Text("Keluar Dari Akun"),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: _confirmLogout,
             ),
           ],
@@ -110,9 +114,11 @@ class SettingsPage extends StatefulWidget {
   final String name;
   final String email;
 
+  // ignore: use_super_parameters
   const SettingsPage({Key? key, required this.name, required this.email}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _SettingsPageState createState() => _SettingsPageState();
 }
 
@@ -150,11 +156,11 @@ class _SettingsPageState extends State<SettingsPage> {
       await prefs.setString('user_email', _emailController.text);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Profil berhasil diperbarui")),
+        const SnackBar(content: Text("Profil berhasil diperbarui")),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal memperbarui profil")),
+        const SnackBar(content: Text("Gagal memperbarui profil")),
       );
     }
   }
@@ -163,11 +169,11 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pengaturan"),
+        title: const Text("Pengaturan"),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -176,39 +182,39 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Personal Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            const Text('Personal Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Nama",
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Email",
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
-            Text('Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            const SizedBox(height: 20),
+            const Text('Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "************",
                 suffixText: 'Change',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
-            Text('Notifications', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            const Text('Notifications', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             SwitchListTile(
-              title: Text('Sales'),
+              title: const Text('Sales'),
               value: salesNotifications,
               onChanged: (bool value) {
                 setState(() {
@@ -217,7 +223,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             SwitchListTile(
-              title: Text('New arrivals'),
+              title: const Text('New arrivals'),
               value: newArrivalsNotifications,
               onChanged: (bool value) {
                 setState(() {
@@ -226,7 +232,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             SwitchListTile(
-              title: Text('Status Delivery'),
+              title: const Text('Status Delivery'),
               value: statusDeliveryNotifications,
               onChanged: (bool value) {
                 setState(() {
@@ -234,10 +240,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 });
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveChanges,
-              child: Text("Simpan"),
+              child: const Text("Simpan"),
             ),
           ],
         ),
