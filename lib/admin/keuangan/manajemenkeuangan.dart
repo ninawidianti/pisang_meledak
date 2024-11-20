@@ -1,167 +1,174 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:http/http.dart' as http;
 
 class ManajemenKeuangan extends StatefulWidget {
-  const ManajemenKeuangan({super.key});
-
   @override
-  State<ManajemenKeuangan> createState() => _ManajemenKeuanganState();
+  _ManajemenKeuanganState createState() => _ManajemenKeuanganState();
 }
 
 class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
-  List<BarChartGroupData> _createSampleData() {
-    final data = [
-      RevenueData('Jan', 30),
-      RevenueData('Feb', 70),
-      RevenueData('Mar', 100),
-      RevenueData('Apr', 50),
-      RevenueData('May', 90),
-    ];
+  String _filter = "daily";
+  double _totalIncome = 0;
+  double _totalExpense = 0;
 
-    return data.asMap().entries.map((entry) {
-      int index = entry.key;
-      RevenueData revenue = entry.value;
-      return BarChartGroupData(
-        x: index,
-        barRods: [
-          BarChartRodData(
-            toY: revenue.amount.toDouble(),
-            color: Colors.green,
-            width: 20,
-          ),
-        ],
-      );
-    }).toList();
+  List<Map<String, dynamic>> incomeData = [];
+  List<Map<String, dynamic>> expenseData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFinancialData();
+  }
+
+  Future<void> _fetchFinancialData() async {
+    try {
+      String baseUrl = 'http://127.0.0.1:8000/api'; // Ganti dengan URL API Anda
+      final incomeResponse = await http.get(Uri.parse('$baseUrl/income?filter=$_filter'));
+      final expenseResponse = await http.get(Uri.parse('$baseUrl/expenses?filter=$_filter'));
+
+      if (incomeResponse.statusCode == 200 && expenseResponse.statusCode == 200) {
+        final incomeJson = json.decode(incomeResponse.body);
+        final expenseJson = json.decode(expenseResponse.body);
+
+        setState(() {
+          incomeData = List<Map<String, dynamic>>.from(incomeJson['data'] ?? []);
+          expenseData = List<Map<String, dynamic>>.from(expenseJson['data'] ?? []);
+
+          _totalIncome = incomeData.fold(0.0, (sum, item) {
+            return sum + (double.tryParse(item['amount'].toString()) ?? 0.0);
+          });
+
+          _totalExpense = expenseData.fold(0.0, (sum, item) {
+            return sum + (double.tryParse(item['amount'].toString()) ?? 0.0);
+          });
+        });
+      } else {
+        throw Exception('Gagal mengambil data dari server');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  String _getFilterLabel() {
+    switch (_filter) {
+      case "daily":
+        return "Hari ini";
+      case "weekly":
+        return "Minggu ini";
+      case "monthly":
+        return "Bulan ini";
+      default:
+        return "";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
         title: const Text(
           "Manajemen Keuangan",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white),
         ),
+        backgroundColor: Colors.green,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Pemasukan',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  // Navigate to income entry page
-                },
-                // ignore: sort_child_properties_last
-                child: const Text('Tambah Pemasukan'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A7C5B),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Pengeluaran',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  // Navigate to expense entry page
-                },
-                // ignore: sort_child_properties_last
-                child: const Text('Tambah Pengeluaran'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A7C5B),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Laporan Omset',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 200,
-                child: BarChart(
-                  BarChartData(
-                    alignment: BarChartAlignment.spaceAround,
-                    barGroups: _createSampleData(),
-                    titlesData: FlTitlesData(
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: (double value, TitleMeta meta) {
-                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
-                            return SideTitleWidget(
-                              axisSide: meta.axisSide,
-                              child: Text(months[value.toInt()]),
-                            );
-                          },
-                        ),
-                      ),
-                      leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: true),
-                      ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Dropdown untuk memilih filter
+            DropdownButton<String>(
+              value: _filter,
+              items: [
+                DropdownMenuItem(value: "daily", child: Text("Harian")),
+                DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
+                DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _filter = value!;
+                });
+                _fetchFinancialData();
+              },
+            ),
+            SizedBox(height: 20),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      children: [
+                        Icon(Icons.arrow_downward, color: Colors.green, size: 30),
+                        SizedBox(height: 5),
+                        Text("Pemasukan"),
+                        Text("Rp ${_totalIncome.toStringAsFixed(0)}"),
+                        Text("(${_getFilterLabel()})", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
                     ),
-                    borderData: FlBorderData(show: false),
-                  ),
+                    Column(
+                      children: [
+                        Icon(Icons.arrow_upward, color: Colors.red, size: 30),
+                        SizedBox(height: 5),
+                        Text("Pengeluaran"),
+                        Text("Rp ${_totalExpense.toStringAsFixed(0)}"),
+                        Text("(${_getFilterLabel()})", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Icon(Icons.account_balance_wallet, color: Colors.blue, size: 30),
+                        SizedBox(height: 5),
+                        Text("Saldo"),
+                        Text("Rp ${(_totalIncome - _totalExpense).toStringAsFixed(0)}"),
+                        Text("(${_getFilterLabel()})", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Riwayat Pemasukan dan Pengeluaran',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              // Replace with actual data from your records
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 10, // Replace with your data count
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      title: Text('Pemasukan/Pengeluaran $index'),
-                      subtitle: Text('Detail transaksi $index'),
-                      trailing: Text('Rp ${index * 1000}'), // Example amount
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+            ),
+            SizedBox(height: 20),
+            _buildDataCard("Pemasukan", incomeData),
+            SizedBox(height: 20),
+            _buildDataCard("Pengeluaran", expenseData),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_checkout_outlined),
-              label: 'Pesanan'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),
-        ],
       ),
     );
   }
-}
 
-class RevenueData {
-  final String month;
-  final int amount;
-
-  RevenueData(this.month, this.amount);
+  Widget _buildDataCard(String title, List<Map<String, dynamic>> data) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                final item = data[index];
+                return ListTile(
+                  title: Text(item['description']),
+                  subtitle: Text(item['date']),
+                  trailing: Text("Rp ${item['amount']}"),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

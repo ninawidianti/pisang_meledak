@@ -268,7 +268,7 @@ class _HomePage2State extends State<HomePage2> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const ManajemenKeuangan()),
+                          builder: (context) =>  ManajemenKeuangan()),
                     );
                   }),
                 ],
