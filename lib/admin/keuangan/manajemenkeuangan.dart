@@ -1,6 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'crud_manajemenkeuangan.dart'; // Pastikan file UnexpectedExpenseScreen diimpor
 
 class ManajemenKeuangan extends StatefulWidget {
   @override
@@ -23,18 +24,35 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
 
   Future<void> _fetchFinancialData() async {
     try {
-      String baseUrl = 'http://127.0.0.1:8000/api'; // Ganti dengan URL API Anda
-      final incomeResponse = await http.get(Uri.parse('$baseUrl/income?filter=$_filter'));
-      final expenseResponse = await http.get(Uri.parse('$baseUrl/expenses?filter=$_filter'));
+      String baseUrl = 'http://127.0.0.1:8000/api';
+      final incomeResponse =
+          await http.get(Uri.parse('$baseUrl/income?filter=$_filter'));
+      final expenseResponse =
+          await http.get(Uri.parse('$baseUrl/expenses?filter=$_filter'));
+      final unexpectedExpenseResponse = await http
+          .get(Uri.parse('$baseUrl/unexpected-expenses?filter=$_filter'));
 
-      if (incomeResponse.statusCode == 200 && expenseResponse.statusCode == 200) {
+      if (incomeResponse.statusCode == 200 &&
+          expenseResponse.statusCode == 200 &&
+          unexpectedExpenseResponse.statusCode == 200) {
         final incomeJson = json.decode(incomeResponse.body);
         final expenseJson = json.decode(expenseResponse.body);
+        final unexpectedExpenseJson =
+            json.decode(unexpectedExpenseResponse.body);
 
         setState(() {
-          incomeData = List<Map<String, dynamic>>.from(incomeJson['data'] ?? []);
-          expenseData = List<Map<String, dynamic>>.from(expenseJson['data'] ?? []);
+          incomeData =
+              List<Map<String, dynamic>>.from(incomeJson['data'] ?? []);
+          List<Map<String, dynamic>> normalExpenses =
+              List<Map<String, dynamic>>.from(expenseJson['data'] ?? []);
+          List<Map<String, dynamic>> unexpectedExpenses =
+              List<Map<String, dynamic>>.from(
+                  unexpectedExpenseJson['data'] ?? []);
 
+          // Gabungkan kedua jenis pengeluaran
+          expenseData = [...normalExpenses, ...unexpectedExpenses];
+
+          // Hitung total pemasukan dan pengeluaran
           _totalIncome = incomeData.fold(0.0, (sum, item) {
             return sum + (double.tryParse(item['amount'].toString()) ?? 0.0);
           });
@@ -75,11 +93,11 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
         backgroundColor: Colors.green,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 80.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Dropdown untuk memilih filter
+          children: [ 
+            SizedBox(height: 20),
             DropdownButton<String>(
               value: _filter,
               items: [
@@ -103,11 +121,13 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                   children: [
                     Column(
                       children: [
-                        Icon(Icons.arrow_downward, color: Colors.green, size: 30),
+                        Icon(Icons.arrow_downward,
+                            color: Colors.green, size: 30),
                         SizedBox(height: 5),
                         Text("Pemasukan"),
                         Text("Rp ${_totalIncome.toStringAsFixed(0)}"),
-                        Text("(${_getFilterLabel()})", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text("(${_getFilterLabel()})",
+                            style: TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     Column(
@@ -116,16 +136,20 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                         SizedBox(height: 5),
                         Text("Pengeluaran"),
                         Text("Rp ${_totalExpense.toStringAsFixed(0)}"),
-                        Text("(${_getFilterLabel()})", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text("(${_getFilterLabel()})",
+                            style: TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     Column(
                       children: [
-                        Icon(Icons.account_balance_wallet, color: Colors.blue, size: 30),
+                        Icon(Icons.account_balance_wallet,
+                            color: Colors.blue, size: 30),
                         SizedBox(height: 5),
                         Text("Saldo"),
-                        Text("Rp ${(_totalIncome - _totalExpense).toStringAsFixed(0)}"),
-                        Text("(${_getFilterLabel()})", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(
+                            "Rp ${(_totalIncome - _totalExpense).toStringAsFixed(0)}"),
+                        Text("(${_getFilterLabel()})",
+                            style: TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ],
@@ -138,6 +162,17 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
             _buildDataCard("Pengeluaran", expenseData),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UnexpectedExpenseScreen()),
+          );
+        },
+        backgroundColor: Colors.green,
+        child: Icon(Icons.add),
+        tooltip: "Tambah Biaya Tidak Terduga",
       ),
     );
   }
@@ -156,6 +191,7 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
             SizedBox(height: 10),
             ListView.builder(
               shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final item = data[index];

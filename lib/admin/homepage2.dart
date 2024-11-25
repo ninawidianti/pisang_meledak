@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/admin/keuangan/manajemenkeuangan.dart';
 import 'package:pisang_meledak/admin/pengguna/listpengguna.dart';
+import 'package:pisang_meledak/admin/pesanan/riwayatpesanan.dart';
 import 'package:pisang_meledak/admin/produk/listproduct.dart';
 import 'package:pisang_meledak/admin/stokbahan/liststokbahan.dart';
+import 'package:pisang_meledak/admin/pesanan/listpesanan.dart';
 import 'package:pisang_meledak/customer/akun/akuncustomer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -29,8 +31,12 @@ class _HomePage2State extends State<HomePage2> {
       case 0:
         break;
       case 1:
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ListPesananPage()));
         break;
       case 2:
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => RiwayatPage()));
         break;
       case 3:
         Navigator.push(
@@ -200,8 +206,8 @@ class _HomePage2State extends State<HomePage2> {
                                 style: TextStyle(color: Colors.white),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFF2A7C5B).withOpacity(0.5), // Green color
+                                backgroundColor: const Color(0xFF2A7C5B)
+                                    .withOpacity(0.5), // Green color
                                 elevation: 0,
                               ),
                             ),
@@ -248,9 +254,12 @@ class _HomePage2State extends State<HomePage2> {
                           builder: (context) => const ListProduct()),
                     );
                   }),
-                  _buildCategoryIcon(Icons.receipt_long, 'Pesanan', () {
-                    //tambahkan
-                  }),
+                  // _buildCategoryIcon(Icons.receipt_long, 'Pesanan', () {
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(builder: (context) => ListPesananPage()),
+                  //   );
+                  // }),
                   _buildCategoryIcon(Icons.inventory, 'Bahan Baku', () {
                     Navigator.push(
                       context,
@@ -268,7 +277,7 @@ class _HomePage2State extends State<HomePage2> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>  ManajemenKeuangan()),
+                          builder: (context) => ManajemenKeuangan()),
                     );
                   }),
                 ],

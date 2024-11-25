@@ -58,7 +58,8 @@ class _ListStokBahanState extends State<ListStokBahan> {
 
   // Function to edit stock item
   Future<void> editStokBahan(Map<String, dynamic> updatedItem) async {
-    final url = Uri.parse('http://localhost:8000/api/stokbahan/${updatedItem['id']}');
+    final url =
+        Uri.parse('http://localhost:8000/api/stokbahan/${updatedItem['id']}');
     try {
       final response = await http.put(
         url,
@@ -66,7 +67,8 @@ class _ListStokBahanState extends State<ListStokBahan> {
         body: json.encode(updatedItem),
       );
       if (response.statusCode == 200) {
-        final updatedIndex = stokBahan.indexWhere((item) => item['id'] == updatedItem['id']);
+        final updatedIndex =
+            stokBahan.indexWhere((item) => item['id'] == updatedItem['id']);
         if (updatedIndex != -1) {
           setState(() {
             stokBahan[updatedIndex] = updatedItem;
@@ -89,9 +91,11 @@ class _ListStokBahanState extends State<ListStokBahan> {
   // Function to show edit form dialog
   void showEditDialog(Map<String, dynamic> item) {
     final nameController = TextEditingController(text: item['name']);
-    final stockQuantityController = TextEditingController(text: item['stock_quantity'].toString());
+    final stockQuantityController =
+        TextEditingController(text: item['stock_quantity'].toString());
     final unitController = TextEditingController(text: item['unit']);
-    final purchasePriceController = TextEditingController(text: item['purchase_price'].toString());
+    final purchasePriceController =
+        TextEditingController(text: item['purchase_price'].toString());
     final supplierController = TextEditingController(text: item['supplier']);
 
     showDialog(
@@ -164,6 +168,12 @@ class _ListStokBahanState extends State<ListStokBahan> {
       appBar: AppBar(
         title: const Text('Stok Bahan', style: TextStyle(fontSize: 18)),
         backgroundColor: const Color(0xFF67C4A7),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Untuk kembali ke halaman sebelumnya
+          },
+        ),
       ),
       body: stokBahan.isEmpty
           ? const Center(child: CircularProgressIndicator())
@@ -171,7 +181,8 @@ class _ListStokBahanState extends State<ListStokBahan> {
               itemCount: stokBahan.length,
               itemBuilder: (context, index) {
                 return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
