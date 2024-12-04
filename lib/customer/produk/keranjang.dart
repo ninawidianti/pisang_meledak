@@ -129,7 +129,7 @@ class _CartPageState extends State<CartPage> {
                 color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.normal)),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF67C4A7),
         iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
       ),

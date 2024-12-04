@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/customer/homepage.dart'; // Import for customer homepage
@@ -51,14 +51,15 @@ class _LoginPageState extends State<LoginPage> {
         var data = json.decode(response.body);
 
         if (data['access_token'] != null) {
-          // Save token in SharedPreferences
+          // Save token and user id in SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('access_token', data['access_token']);
+          await prefs.setInt('user_id', data['user']['id']); // Save user ID
 
-          // Print success and token
-          // ignore: avoid_print
+          // Print success, token, and user ID
           print('Login successful, Token: ${data['access_token']}');
-          
+          print('User ID: ${data['user']['id']}'); // Debugging purpose
+
           // Check the user's role
           String role = data['user']['role'];
           String userName = data['user']['name']; // Save user's name
@@ -152,12 +153,16 @@ class _LoginPageState extends State<LoginPage> {
                   controller: _emailController,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Email',
-                    hintStyle: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   ),
                 ),
               ),
@@ -189,12 +194,16 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   decoration: const InputDecoration(
                     hintText: 'Masukkan Password',
-                    hintStyle: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
+                    hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.normal),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   ),
                 ),
               ),

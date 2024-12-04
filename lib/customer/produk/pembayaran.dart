@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'package:pisang_meledak/customer/homepage.dart';
+import 'package:pisang_meledak/customer/pesanan/riwayat.dart';
 import 'dart:convert';
 import 'package:pisang_meledak/customer/produk/keranjang.dart';
 import 'package:pisang_meledak/service/api_service.dart';
@@ -126,7 +126,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage(userName: '',)),
+        MaterialPageRoute(builder: (context) => const RiwayatPage()),
       );
     });
   }

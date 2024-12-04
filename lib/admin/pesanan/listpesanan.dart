@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, avoid_print, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -73,62 +75,93 @@ class _ListPesananPageState extends State<ListPesananPage>
     }
   }
 
-Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
-  // Mengambil detail dari order items berdasarkan orderId
-  final url = Uri.parse('http://127.0.0.1:8000/api/order-items?order_id=$orderId');
-  
-  try {
-    // Mengambil item pesanan
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+  Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
+    // Fetch order details
+    final url = Uri.parse('http://127.0.0.1:8000/api/orders/$orderId');
 
-    if (response.statusCode == 200) {
-      final List orderItems = json.decode(response.body); // Ambil order items berdasarkan orderId
-
-      // Ambil detail produk untuk setiap item pesanan dan gabungkan dengan data item pesanan
-      final itemsWithProductDetails = await Future.wait(orderItems.map((item) async {
-        final productDetails = await fetchProductDetails(item['product_id']);
-        return {
-          ...item,
-          ...productDetails,
-        }; // Gabungkan detail produk ke dalam item pesanan
-      }).toList());
-
-      // Jika berhasil mengambil data, navigasi ke halaman OrderDetailPage
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OrderDetailPage(
-            orderDetails: {
-              'order_id': orderId, // Anda bisa menambahkan detail lain jika perlu
-              // Tambahkan detail order lainnya jika ada
-            },
-            orderItems: itemsWithProductDetails, // Kirim semua orderItems yang sudah digabungkan
-          ),
-        ),
+    try {
+      // Get the order details including payment, delivery method, and address
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
-    } else {
+
+      if (response.statusCode == 200) {
+        final orderDetails = json.decode(response.body);
+
+        // Fetch the user name based on the user_id from the order details
+        final userName = await fetchUserName(orderDetails['user_id']);
+
+        // Fetch order items based on orderId
+        final itemsResponse = await http.get(
+          Uri.parse('http://127.0.0.1:8000/api/order-items?order_id=$orderId'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (itemsResponse.statusCode == 200) {
+          final List orderItems = json.decode(itemsResponse.body);
+
+          // Get product details for each order item
+          final itemsWithProductDetails =
+              await Future.wait(orderItems.map((item) async {
+            final productDetails =
+                await fetchProductDetails(item['product_id']);
+            return {
+              ...item,
+              ...productDetails,
+            }; // Merge product details with order items
+          }).toList());
+
+          // Navigate to the OrderDetailPage with order details and order items
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderDetailPage(
+                orderDetails: {
+                  'payment_method': orderDetails['payment_method'],
+                  'delivery_method': orderDetails['delivery_method'],
+                  'address': orderDetails['address'],
+                  'total_price': orderDetails['total_price'],
+                  'user_name': userName, 
+                  'order_id': orderDetails['id'],
+                },
+                orderItems: itemsWithProductDetails,
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Failed to load order items: ${itemsResponse.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Failed to load order details: ${response.statusCode}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Gagal mengambil detail pesanan: ${response.statusCode}'),
+          content: Text('Error: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Terjadi kesalahan: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
 
   Future<Map<String, dynamic>> fetchProductDetails(int productId) async {
     final url = Uri.parse('http://127.0.0.1:8000/api/products/$productId');
@@ -177,8 +210,8 @@ Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Gagal memperbarui status. Coba lagi.'),
+        const SnackBar(
+          content: Text('Gagal memperbarui status. Coba lagi.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -202,9 +235,18 @@ Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
               children: [
                 TabBar(
                   controller: _tabController,
+                  labelStyle: const TextStyle(
+                    fontSize: 12, // Ukuran font kecil
+                    fontWeight: FontWeight.normal, // Tidak bold
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize:
+                        12, // Ukuran font kecil untuk tab yang tidak dipilih
+                    fontWeight: FontWeight.normal, // Tidak bold
+                  ),
                   tabs: const [
                     Tab(text: 'Pending'),
-                    Tab(text: 'Proses'),
+                    Tab(text: 'Process'),
                     Tab(text: 'Complete'),
                     Tab(text: 'Cancel'),
                   ],
@@ -215,6 +257,8 @@ Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
                     children: [
                       OrderList(
                         orders: filterOrdersByStatus('pending'),
+                        onTap: (orderId) => fetchOrderDetails(
+                            orderId, context), // Navigasi ke detail
                         onAccept: (orderId) =>
                             updateOrderStatus(orderId, 'process'),
                         onCancel: (orderId) =>
@@ -222,6 +266,8 @@ Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
                       ),
                       OrderList(
                         orders: filterOrdersByStatus('process'),
+                        onTap: (orderId) => fetchOrderDetails(
+                            orderId, context), // Navigasi ke detail
                         onComplete: (orderId) =>
                             updateOrderStatus(orderId, 'completed'),
                         onCancel: (orderId) =>
@@ -229,9 +275,13 @@ Future<void> fetchOrderDetails(int orderId, BuildContext context) async {
                       ),
                       OrderList(
                         orders: filterOrdersByStatus('completed'),
+                        onTap: (orderId) => fetchOrderDetails(
+                            orderId, context), // Navigasi ke detail
                       ),
                       OrderList(
                         orders: filterOrdersByStatus('canceled'),
+                        onTap: (orderId) => fetchOrderDetails(
+                            orderId, context), // Navigasi ke detail
                       ),
                     ],
                   ),
@@ -247,65 +297,133 @@ class OrderList extends StatelessWidget {
   final Function(int orderId)? onAccept;
   final Function(int orderId)? onComplete;
   final Function(int orderId)? onCancel;
+  final Function(int orderId)? onTap;
 
   const OrderList({
     required this.orders,
     this.onAccept,
     this.onComplete,
     this.onCancel,
+    required this.onTap,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return orders.isEmpty
-        ? const Center(child: Text('Tidak ada pesanan.'))
+        ? const Center(
+            child: Text(
+              'Tidak ada pesanan.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          )
         : ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
-              return Card(
-                margin: const EdgeInsets.all(8.0),
-                child: ListTile(
-                  title: Text('Order ID: ${order['id']}'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Nama: ${order['user_name']}'),
-                      Text('Total Harga: Rp ${order['total_price']}'),
-                      Text('Status: ${order['status']}'),
-                    ],
+              return InkWell(
+                onTap: () {
+                  if (onTap != null) {
+                    onTap!(order[
+                        'id']); // Tambahkan tanda seru untuk memanggil fungsi nullable
+                  }
+                },
+                child: Card(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 12.0, vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (order['status'] == 'pending' && onAccept != null)
-                        ElevatedButton(
-                          onPressed: () => onAccept!(order['id']),
-                          child: const Text('Terima'),
+                  elevation: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order ID: ${order['id']}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      if (order['status'] == 'pending' && onCancel != null)
-                        ElevatedButton(
-                          onPressed: () => onCancel!(order['id']),
-                          child: const Text('Batalkan'),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Nama: ${order['user_name']}',
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
-                      if (order['status'] == 'process' && onComplete != null)
-                        ElevatedButton(
-                          onPressed: () => onComplete!(order['id']),
-                          child: const Text('Selesai'),
+                        Text(
+                          'Total Harga: Rp ${order['total_price']}',
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
-                      if (order['status'] == 'process' && onCancel != null)
-                        ElevatedButton(
-                          onPressed: () => onCancel!(order['id']),
-                          child: const Text('Batalkan'),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Status: ${order['status']}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: order['status'] == 'canceled'
+                                ? Colors.red
+                                : order['status'] == 'pending'
+                                    ? Colors.orange
+                                    : Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                    ],
+                        const SizedBox(height: 16),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: [
+                              if (order['status'] == 'pending' &&
+                                  onAccept != null)
+                                OutlinedButton(
+                                  onPressed: () => onAccept!(order['id']),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.green,
+                                    side: const BorderSide(color: Colors.green),
+                                  ),
+                                  child: const Text('Terima'),
+                                ),
+                              if (order['status'] == 'pending' &&
+                                  onCancel != null)
+                                OutlinedButton(
+                                  onPressed: () => onCancel!(order['id']),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: const BorderSide(color: Colors.red),
+                                  ),
+                                  child: const Text('Batalkan'),
+                                ),
+                              if (order['status'] == 'process' &&
+                                  onComplete != null)
+                                ElevatedButton(
+                                  onPressed: () => onComplete!(order['id']),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF67C4A7),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Selesai'),
+                                ),
+                              if (order['status'] == 'process' &&
+                                  onCancel != null)
+                                OutlinedButton(
+                                  onPressed: () => onCancel!(order['id']),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: const BorderSide(color: Colors.red),
+                                  ),
+                                  child: const Text('Batalkan'),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  onTap: () {
-                    context
-                        .findAncestorStateOfType<_ListPesananPageState>()
-                        ?.fetchOrderDetails(order['id'], context);
-                  },
                 ),
               );
             },
@@ -317,59 +435,288 @@ class OrderDetailPage extends StatelessWidget {
   final Map<String, dynamic> orderDetails;
   final List orderItems;
 
-  const OrderDetailPage(
-      {required this.orderDetails, required this.orderItems, Key? key})
-      : super(key: key);
+  const OrderDetailPage({
+    required this.orderDetails,
+    required this.orderItems,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Pesanan', style: TextStyle(fontSize: 18)),
+        title: const Text(
+          'Detail Pesanan',
+          style: TextStyle(fontSize: 18),
+        ),
         backgroundColor: const Color(0xFF67C4A7),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Judul Halaman
+            const Center(
+              child: Text(
+                'Rincian Pesanan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Order ID
+            // Row(
+            //   children: [
+            //     const Icon(Icons.confirmation_number, color: Colors.black54),
+            //     const SizedBox(width: 8),
+            //     Expanded(
+            //       child: Row(
+            //         children: [
+            //           const Text(
+            //             'Order ID: ',
+            //             style: TextStyle(fontSize: 16, color: Colors.black87),
+            //           ),
+            //           Text(
+            //             '${orderDetails['id']}',
+            //             style: const TextStyle(
+            //                 fontSize: 16, color: Colors.black87),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 10),
+
+            // Nama Pemesan
+            Row(
               children: [
-                Text('Metode Pembayaran: ${orderDetails['payment_method']}'),
-                Text('Metode Pengiriman: ${orderDetails['delivery_method']}'),
-                Text('Alamat: ${orderDetails['address']}'),
-                Text('Total Harga: Rp ${orderDetails['total_price']}'),
+                const Icon(Icons.person, color: Colors.black54),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Nama: ',
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      Text(
+                        '${orderDetails['user_name']}',
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-          const Divider(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: orderItems.length,
-              itemBuilder: (context, index) {
-                final item = orderItems[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    title: Text(item['product_name']),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Jumlah: ${item['quantity']}'),
-                        Text('Deskripsi: ${item['description']}'),
-                        Text('Harga: Rp ${item['price']}'),
-                      ],
-                    ),
-                    leading: item['image_url'] != null
-                        ? Image.network(item['image_url'],
-                            width: 50, height: 50, fit: BoxFit.cover)
-                        : const SizedBox(width: 50, height: 50),
+            const SizedBox(height: 10),
+
+            // Metode Pembayaran
+            Row(
+              children: [
+                const Icon(Icons.payment, color: Colors.black54),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Metode Pembayaran: ',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      Text(
+                        '${orderDetails['payment_method']}',
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+
+            // Metode Pengiriman
+            Row(
+              children: [
+                const Icon(Icons.local_shipping, color: Colors.black54),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Metode Pengiriman: ',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      Text(
+                        '${orderDetails['delivery_method']}',
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Alamat Pengiriman
+            Row(
+              children: [
+                const Icon(Icons.location_on, color: Colors.black54),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Alamat: ',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      Text(
+                        '${orderDetails['address']}',
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Total Harga
+            Row(
+              children: [
+                const Icon(Icons.attach_money, color: Colors.black54),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Total Harga: ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'Rp ${orderDetails['total_price']}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Pesanan Customer
+            const Text(
+              'Pesanan Customer',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
+            ),
+            const SizedBox(height: 12),
+
+            // List Item Pesanan
+            Expanded(
+              child: ListView.builder(
+                itemCount: orderItems.length,
+                itemBuilder: (context, index) {
+                  final item = orderItems[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        children: [
+                          if (item['image_url'] != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Image.network(
+                                item['image_url'],
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.image_not_supported,
+                                        size: 60, color: Colors.grey),
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: const Icon(Icons.image_not_supported,
+                                  size: 40, color: Colors.grey),
+                            ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['product_name'],
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Jumlah: ${item['quantity']}',
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black87),
+                                ),
+                                Text(
+                                  'Harga: Rp ${item['price']}',
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black87),
+                                ),
+                                if (item['description'] != null &&
+                                    item['description'].isNotEmpty)
+                                  Text(
+                                    'Deskripsi: ${item['description']}',
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => RiwayatPage()),
+          MaterialPageRoute(builder: (context) => const RiwayatPage()),
         );
         break;
       case 3:
@@ -306,6 +306,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+                      // Horizontal Image Slider
                       // Horizontal Image Slider
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),

@@ -1,8 +1,11 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// ignore: use_key_in_widget_constructors
 class ListPengguna extends StatefulWidget {
   @override
   _ListPenggunaState createState() => _ListPenggunaState();

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pisang_meledak/admin/stokbahan/addstokbahan.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ignore: use_key_in_widget_constructors
 class ListStokBahan extends StatefulWidget {
@@ -30,6 +31,18 @@ class _ListStokBahanState extends State<ListStokBahan> {
       }
     } catch (error) {
       print('Error fetching data: $error');
+    }
+  }
+
+  // Function to open PDF in browser
+  Future<void> openPDFInBrowser() async {
+    const url = 'http://127.0.0.1:8000/stokbahan/pdf';
+    // ignore: deprecated_member_use
+    if (await canLaunch(url)) {
+      // ignore: deprecated_member_use
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
     }
   }
 
@@ -167,6 +180,13 @@ class _ListStokBahanState extends State<ListStokBahan> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stok Bahan', style: TextStyle(fontSize: 18)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: openPDFInBrowser,
+            tooltip: 'Unduh PDF',
+          ),
+        ],
         backgroundColor: const Color(0xFF67C4A7),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

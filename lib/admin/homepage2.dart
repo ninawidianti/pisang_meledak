@@ -36,7 +36,7 @@ class _HomePage2State extends State<HomePage2> {
         break;
       case 2:
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => RiwayatPage()));
+            context, MaterialPageRoute(builder: (context) => const RiwayatPage()));
         break;
       case 3:
         Navigator.push(

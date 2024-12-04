@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -12,7 +14,7 @@ class RiwayatPage extends StatefulWidget {
 
 class _RiwayatPageState extends State<RiwayatPage> {
   List orders = [];
-  Map<int, String> userMap = {}; // Map untuk menyimpan data pengguna
+  Map<int, String> userMap = {};
   bool isLoadingOrders = true;
   String? token;
   String searchQuery = '';
@@ -27,7 +29,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     token = prefs.getString('access_token');
     if (token != null) {
-      await fetchUsers(); // Ambil data pengguna terlebih dahulu
+      await fetchUsers();
       fetchOrders();
     } else {
       print('Token not found');
@@ -46,7 +48,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       setState(() {
         userMap = {
           for (var user in rawUsers) user['id']: user['name']
-        }; // Peta ID pengguna ke nama pengguna
+        };
       });
     } else {
       print('Failed to load users: ${response.statusCode} ${response.body}');
@@ -68,7 +70,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                 order['status'] == 'completed' || order['status'] == 'canceled')
             .map((order) {
           order['user_name'] =
-              userMap[order['user_id']] ?? 'Tidak Diketahui'; // Tambahkan nama pengguna
+              userMap[order['user_id']] ?? 'Tidak Diketahui';
           return order;
         }).toList();
         isLoadingOrders = false;
@@ -83,8 +85,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
       return orders;
     }
     return orders.where((order) {
+      final id = order['id'].toString().toLowerCase();
       final userName = order['user_name'].toLowerCase();
-      return userName.contains(query.toLowerCase());
+      final status = order['status'].toLowerCase();
+      final totalPrice = order['total_price'].toString().toLowerCase();
+      return id.contains(query.toLowerCase()) ||
+          userName.contains(query.toLowerCase()) ||
+          status.contains(query.toLowerCase()) ||
+          totalPrice.contains(query.toLowerCase());
     }).toList();
   }
 
@@ -92,11 +100,11 @@ class _RiwayatPageState extends State<RiwayatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Pesanan', style: TextStyle(fontSize: 18)),
+        title: const Text('Riwayat Pesanan', style: TextStyle(fontSize: 18  )),
         backgroundColor: const Color(0xFF67C4A7),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, size: 30),
             onPressed: () {
               showSearch(context: context, delegate: OrderSearchDelegate(orders));
             },
@@ -118,30 +126,43 @@ class OrderList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return orders.isEmpty
-        ? const Center(child: Text('Tidak ada pesanan.'))
+        ? const Center(child: Text('Tidak ada pesanan.', style: TextStyle(fontSize: 18, color: Colors.grey)))
         : ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
               return Card(
-                margin: const EdgeInsets.all(8.0),
+                margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 5,
                 child: ListTile(
-                  title: Text('Order ID: ${order['id']}'),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                  title: Text('Order ID: ${order['id']}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Nama: ${order['user_name']}'),
-                      Text('Total Harga: Rp ${order['total_price']}'),
-                      Text('Status: ${order['status']}'),
+                      Text('Nama: ${order['user_name']}', style: const TextStyle(fontSize: 14)),
+                      Text('Total Harga: Rp ${order['total_price']}', style: const TextStyle(fontSize: 14)),
+                      Text('Status: ${order['status']}', style: TextStyle(fontSize: 14, color: _getStatusColor(order['status']))),
                     ],
                   ),
                   onTap: () {
-                    // Navigasi ke detail pesanan jika perlu
+                    // Implement your order detail navigation here if necessary.
                   },
                 ),
               );
             },
           );
+  }
+
+  Color _getStatusColor(String status) {
+    if (status == 'completed') {
+      return Colors.green;
+    } else if (status == 'canceled') {
+      return Colors.red;
+    } else {
+      return Colors.orange;
+    }
   }
 }
 
@@ -175,8 +196,14 @@ class OrderSearchDelegate extends SearchDelegate {
   @override
   Widget buildResults(BuildContext context) {
     final filteredOrders = orders.where((order) {
+      final id = order['id'].toString().toLowerCase();
       final userName = order['user_name'].toLowerCase();
-      return userName.contains(query.toLowerCase());
+      final status = order['status'].toLowerCase();
+      final totalPrice = order['total_price'].toString().toLowerCase();
+      return id.contains(query.toLowerCase()) ||
+          userName.contains(query.toLowerCase()) ||
+          status.contains(query.toLowerCase()) ||
+          totalPrice.contains(query.toLowerCase());
     }).toList();
 
     return OrderList(orders: filteredOrders);
@@ -187,3 +214,5 @@ class OrderSearchDelegate extends SearchDelegate {
     return OrderList(orders: orders);
   }
 }
+
+

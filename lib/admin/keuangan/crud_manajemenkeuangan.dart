@@ -1,9 +1,13 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+// ignore: use_key_in_widget_constructors
 class UnexpectedExpenseScreen extends StatefulWidget {
   @override
+  // ignore: library_private_types_in_public_api
   _UnexpectedExpenseScreenState createState() =>
       _UnexpectedExpenseScreenState();
 }
@@ -57,7 +61,8 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
           unexpectedExpenses.add(expenseData);
         });
         _clearForm();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Biaya Tidak Terduga berhasil ditambahkan')));
       } else {
         throw Exception('Gagal menambahkan data');
@@ -77,8 +82,9 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
         setState(() {
           unexpectedExpenses.removeWhere((expense) => expense['id'] == id);
         });
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Biaya Tidak Terduga berhasil dihapus')));
+            const SnackBar(content: Text('Biaya Tidak Terduga berhasil dihapus')));
       } else {
         throw Exception('Gagal menghapus data');
       }
@@ -97,11 +103,11 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Biaya Tidak Terduga'),
+        title: const Text('Biaya Tidak Terduga'),
         actions: [
           DropdownButton<String>(
             value: _filter,
-            items: [
+            items: const [
               DropdownMenuItem(value: "daily", child: Text("Harian")),
               DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
               DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
@@ -127,29 +133,29 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
                   children: [
                     TextField(
                       controller: _descriptionController,
-                      decoration: InputDecoration(labelText: 'Deskripsi'),
+                      decoration: const InputDecoration(labelText: 'Deskripsi'),
                     ),
                     TextField(
                       controller: _amountController,
-                      decoration: InputDecoration(labelText: 'Jumlah harga'),
+                      decoration: const InputDecoration(labelText: 'Jumlah harga'),
                       keyboardType: TextInputType.number,
                     ),
                     TextField(
                       controller: _dateController,
                       decoration:
-                          InputDecoration(labelText: 'Tanggal (YYYY-MM-DD)'),
+                          const InputDecoration(labelText: 'Tanggal (YYYY-MM-DD)'),
                       keyboardType: TextInputType.datetime,
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: _addUnexpectedExpense,
-                      child: Text('Tambahkan Biaya Tidak Terduga'),
+                      child: const Text('Tambahkan Biaya Tidak Terduga'),
                     ),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // List of Expenses
             ...unexpectedExpenses.map((expense) {
               return Card(
@@ -161,7 +167,7 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
                     children: [
                       Text('Rp ${expense['amount']}'),
                       IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
                           _deleteUnexpectedExpense(expense['id']);
                         },
@@ -170,6 +176,7 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
                   ),
                 ),
               );
+            // ignore: unnecessary_to_list_in_spreads
             }).toList(),
           ],
         ),

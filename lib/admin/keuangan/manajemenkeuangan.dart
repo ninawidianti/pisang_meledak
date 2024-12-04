@@ -1,8 +1,12 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'crud_manajemenkeuangan.dart'; // Pastikan file UnexpectedExpenseScreen diimpor
+import 'package:url_launcher/url_launcher.dart';
 
+// ignore: use_key_in_widget_constructors
 class ManajemenKeuangan extends StatefulWidget {
   @override
   _ManajemenKeuanganState createState() => _ManajemenKeuanganState();
@@ -20,6 +24,18 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
   void initState() {
     super.initState();
     _fetchFinancialData();
+  }
+
+  // Function to open PDF in browser
+  Future<void> openPDFInBrowser() async {
+    const url = 'http://127.0.0.1:8000/financial/pdf';
+    // ignore: deprecated_member_use
+    if (await canLaunch(url)) {
+      // ignore: deprecated_member_use
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   Future<void> _fetchFinancialData() async {
@@ -88,19 +104,26 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
       appBar: AppBar(
         title: const Text(
           "Manajemen Keuangan",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(fontSize: 18),
         ),
-        backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: openPDFInBrowser,
+            tooltip: 'Unduh PDF',
+          ),
+        ],
+        backgroundColor: const Color(0xFF67C4A7),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 80.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [ 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             DropdownButton<String>(
               value: _filter,
-              items: [
+              items: const[
                 DropdownMenuItem(value: "daily", child: Text("Harian")),
                 DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
                 DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
@@ -112,7 +135,7 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                 _fetchFinancialData();
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -121,44 +144,44 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                   children: [
                     Column(
                       children: [
-                        Icon(Icons.arrow_downward,
+                        const Icon(Icons.arrow_downward,
                             color: Colors.green, size: 30),
-                        SizedBox(height: 5),
-                        Text("Pemasukan"),
+                        const SizedBox(height: 5),
+                        const Text("Pemasukan"),
                         Text("Rp ${_totalIncome.toStringAsFixed(0)}"),
                         Text("(${_getFilterLabel()})",
-                            style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     Column(
                       children: [
-                        Icon(Icons.arrow_upward, color: Colors.red, size: 30),
-                        SizedBox(height: 5),
-                        Text("Pengeluaran"),
+                        const Icon(Icons.arrow_upward, color: Colors.red, size: 30),
+                        const SizedBox(height: 5),
+                        const Text("Pengeluaran"),
                         Text("Rp ${_totalExpense.toStringAsFixed(0)}"),
                         Text("(${_getFilterLabel()})",
-                            style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     Column(
                       children: [
-                        Icon(Icons.account_balance_wallet,
+                        const Icon(Icons.account_balance_wallet,
                             color: Colors.blue, size: 30),
-                        SizedBox(height: 5),
-                        Text("Saldo"),
+                        const SizedBox(height: 5),
+                        const Text("Saldo"),
                         Text(
                             "Rp ${(_totalIncome - _totalExpense).toStringAsFixed(0)}"),
                         Text("(${_getFilterLabel()})",
-                            style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildDataCard("Pemasukan", incomeData),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildDataCard("Pengeluaran", expenseData),
           ],
         ),
@@ -170,7 +193,7 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
             MaterialPageRoute(builder: (context) => UnexpectedExpenseScreen()),
           );
         },
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF67C4A7),
         child: Icon(Icons.add),
         tooltip: "Tambah Biaya Tidak Terduga",
       ),
@@ -186,12 +209,12 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
           children: [
             Text(
               title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final item = data[index];
