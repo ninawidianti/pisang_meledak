@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/service/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pisang_meledak/login.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -25,14 +26,16 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userName = prefs.getString('user_name') ?? "User";
-      userEmail = prefs.getString('user_email') ?? "user@example.com";
-    });
+    final userData = await _authService.fetchUserData();
+    if (userData != null) {
+      setState(() {
+        userName = userData['name'];
+        userEmail = userData['email'];
+      });
+    }
   }
 
-  void _confirmLogout() async {
+  Future<void> _confirmLogout() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -54,13 +57,14 @@ class _AccountPageState extends State<AccountPage> {
     );
 
     if (shouldLogout == true) {
-      await _logout();
+      await _authService.logout();
+      // Navigasi ke halaman login dan hapus semua halaman sebelumnya dari tumpukan
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+        (route) => false, // Menghapus semua rute sebelumnya
+      );
     }
-  }
-
-  Future<void> _logout() async {
-    await _authService.logout();
-    Navigator.pushReplacementNamed(context, '/login');
   }
 
   void _openSettings() {
@@ -77,10 +81,10 @@ class _AccountPageState extends State<AccountPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Akun Saya"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // leading: IconButton(  // HAPUS BAGIAN INI
+        //   icon: const Icon(Icons.arrow_back),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -88,6 +92,11 @@ class _AccountPageState extends State<AccountPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Halo, $userName", style: const TextStyle(fontSize: 24)),
+            Text(
+              userEmail ??
+                  "Email tidak ditemukan", // Tampilkan email di bawah nama
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
             const Divider(height: 30, thickness: 1),
             ListTile(
               leading: const Icon(Icons.settings),
@@ -115,7 +124,8 @@ class SettingsPage extends StatefulWidget {
   final String email;
 
   // ignore: use_super_parameters
-  const SettingsPage({Key? key, required this.name, required this.email}) : super(key: key);
+  const SettingsPage({Key? key, required this.name, required this.email})
+      : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -182,7 +192,8 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Personal Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Personal Information',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             TextField(
               controller: _nameController,
@@ -200,7 +211,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Password',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
@@ -212,7 +224,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Notifications', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Notifications',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             SwitchListTile(
               title: const Text('Sales'),
               value: salesNotifications,

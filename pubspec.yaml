@@ -1,6 +1,6 @@
 name: pisang_meledak
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -12,7 +12,7 @@ dependencies:
   intl: ^0.18.0
   url_launcher: ^6.1.5
   http: ^0.13.3
-  image_picker: ^0.8.6  
+  image_picker: ^0.8.6
   fl_chart: ^0.69.0
   shared_preferences: ^2.0.8
   path_provider: ^2.1.2
@@ -28,20 +28,20 @@ flutter:
   uses-material-design: true
 
   assets:
-     - ./lib/assets/logo pisang meledak.png
-     - ./lib/assets/logo.png
-     - ./lib/assets/homepage1.png
-     - ./lib/assets/homepage2.png
-     - ./lib/assets/homepage3.png
-     - ./lib/assets/ilustrasi.png
-     - ./lib/assets/gambar1.jpg
-     - ./lib/assets/gambar2.jpg
-     - ./lib/assets/gambar3.jpg
-     - ./lib/assets/gambar4.jpg
-     - ./lib/assets/gambar5.jpg
-     - ./lib/assets/gambar6.jpg
-     - ./lib/assets/gambar7.jpg
-     - ./lib/assets/gambar8.jpg
+    - ./lib/assets/logo pisang meledak.png
+    - ./lib/assets/logo.png
+    - ./lib/assets/homepage1.png
+    - ./lib/assets/homepage2.png
+    - ./lib/assets/homepage3.png
+    - ./lib/assets/ilustrasi.png
+    - ./lib/assets/gambar1.jpg
+    - ./lib/assets/gambar2.jpg
+    - ./lib/assets/gambar3.jpg
+    - ./lib/assets/gambar4.jpg
+    - ./lib/assets/gambar5.jpg
+    - ./lib/assets/gambar6.jpg
+    - ./lib/assets/gambar7.jpg
+    - ./lib/assets/gambar8.jpg
 
   # fonts:
   #   - family: Poppins
