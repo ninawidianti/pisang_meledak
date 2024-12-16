@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/admin/keuangan/manajemenkeuangan.dart';
 import 'package:pisang_meledak/admin/pengguna/listpengguna.dart';
@@ -6,7 +9,9 @@ import 'package:pisang_meledak/admin/produk/listproduct.dart';
 import 'package:pisang_meledak/admin/stokbahan/liststokbahan.dart';
 import 'package:pisang_meledak/admin/pesanan/listpesanan.dart';
 import 'package:pisang_meledak/customer/akun/akuncustomer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage2 extends StatefulWidget {
   final String userName;
@@ -21,6 +26,39 @@ class HomePage2 extends StatefulWidget {
 class _HomePage2State extends State<HomePage2> {
   TextEditingController searchController = TextEditingController();
   int _selectedIndex = 0;
+  int _notificationCount = 0; // Menyimpan jumlah notifikasi
+  Timer? _timer; // Timer untuk auto-refresh
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNotificationCount(); // Ambil jumlah notifikasi saat inisialisasi
+
+    // Inisialisasi timer untuk auto-refresh
+    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      fetchNotificationCount(); // Panggil fetchNotificationCount setiap 10 detik
+    });
+  }
+
+  Future<void> fetchNotificationCount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+
+    final url = Uri.parse('http://127.0.0.1:8000/api/notifications/count');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        _notificationCount = data['count']; // Set jumlah notifikasi
+      });
+    } else {
+      print('Failed to load notification count: ${response.statusCode}');
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -35,14 +73,20 @@ class _HomePage2State extends State<HomePage2> {
             MaterialPageRoute(builder: (context) => const ListPesananPage()));
         break;
       case 2:
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const RiwayatPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const RiwayatPage()));
         break;
       case 3:
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => AccountPage()));
         break;
     }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Hentikan timer
+    super.dispose();
   }
 
   Widget _buildCategoryIcon(IconData icon, String label, VoidCallback onTap) {
@@ -74,6 +118,10 @@ class _HomePage2State extends State<HomePage2> {
     );
   }
 
+  void refreshNotificationCount() {
+    fetchNotificationCount(); // Panggil fetchNotificationCount
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,10 +145,46 @@ class _HomePage2State extends State<HomePage2> {
           //   ),
           // ),
           IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications,
-              color: Colors.black,
+            onPressed: () {
+              // Navigasi ke halaman notifikasi
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ListPesananPage()),
+              );
+            },
+            icon: Stack(
+              children: [
+                const Icon(
+                  Icons.notifications,
+                  color: Colors.black,
+                  size: 30,
+                ),
+                if (_notificationCount > 0)
+                  Positioned(
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$_notificationCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
