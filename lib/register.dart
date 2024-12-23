@@ -31,7 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       var response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/Register'),
+        Uri.parse('http://127.0.0.1:8000/api/register'),
         body: {
           'name': _nameController.text,
           'email': _emailController.text,

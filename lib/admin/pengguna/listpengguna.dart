@@ -72,7 +72,7 @@ class _ListPenggunaState extends State<ListPengguna> with SingleTickerProviderSt
         child: AppBar(
           title: const Text(
             'Pengguna',
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
           ),
           backgroundColor: const Color(0xFF67C4A7),
         ),
@@ -86,13 +86,13 @@ class _ListPenggunaState extends State<ListPengguna> with SingleTickerProviderSt
               Tab(
                 child: Text(
                   'Customer',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
                 ),
               ),
               Tab(
                 child: Text(
                   'Admin',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
                 ),
               ),
             ],
@@ -130,12 +130,12 @@ class _ListPenggunaState extends State<ListPengguna> with SingleTickerProviderSt
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
             leading: CircleAvatar(
-              radius: 30,
+              radius: 25,
               backgroundColor: Colors.teal.shade200,
               child: Text(
                 users[index]['name'][0].toUpperCase(),
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -144,7 +144,7 @@ class _ListPenggunaState extends State<ListPengguna> with SingleTickerProviderSt
             title: Text(
               users[index]['name'],
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF4A4A4A),
               ),
@@ -154,17 +154,17 @@ class _ListPenggunaState extends State<ListPengguna> with SingleTickerProviderSt
               children: [
                 const SizedBox(height: 8),
                 Text('Email: ${users[index]['email']}',
-                    style: const TextStyle(color: Color(0xFF6C757D))),
+                    style: const TextStyle(color: Color(0xFF6C757D), fontSize: 12, fontWeight: FontWeight.normal)),
                 Text('No HP: ${users[index]['no_hp']}',
-                    style: const TextStyle(color: Color(0xFF6C757D))),
+                    style: const TextStyle(color: Color(0xFF6C757D), fontSize: 12, fontWeight: FontWeight.normal)),
                 Text('Alamat: ${users[index]['alamat']}',
-                    style: const TextStyle(color: Color(0xFF6C757D))),
+                    style: const TextStyle(color: Color(0xFF6C757D), fontSize: 12, fontWeight: FontWeight.normal)),
                 Text('Role: ${users[index]['role']}',
                     style: TextStyle(
                         color: users[index]['role'] == 'admin'
                             ? Colors.red.shade400
                             : Colors.teal.shade400,
-                        fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.normal)),
               ],
             ),
           ),

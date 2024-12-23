@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -9,6 +11,7 @@ import 'package:pisang_meledak/admin/produk/listproduct.dart';
 import 'package:pisang_meledak/admin/stokbahan/liststokbahan.dart';
 import 'package:pisang_meledak/admin/pesanan/listpesanan.dart';
 import 'package:pisang_meledak/customer/akun/akuncustomer.dart';
+import 'package:pisang_meledak/service/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
@@ -28,14 +31,16 @@ class _HomePage2State extends State<HomePage2> {
   int _selectedIndex = 0;
   int _notificationCount = 0; // Menyimpan jumlah notifikasi
   Timer? _timer; // Timer untuk auto-refresh
+  late Future<Map<String, dynamic>> _statsFuture;
 
   @override
   void initState() {
     super.initState();
     fetchNotificationCount(); // Ambil jumlah notifikasi saat inisialisasi
+    _statsFuture = ApiService().fetchDashboardStats();
 
     // Inisialisasi timer untuk auto-refresh
-    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       fetchNotificationCount(); // Panggil fetchNotificationCount setiap 10 detik
     });
   }
@@ -127,15 +132,12 @@ class _HomePage2State extends State<HomePage2> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          "Pisang Meledak",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        backgroundColor: const Color(0xFF67C4A7),
+        title: const Text("Pisang Meledak",
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
         actions: [
           // IconButton(
           //   onPressed: () {},
@@ -204,6 +206,7 @@ class _HomePage2State extends State<HomePage2> {
                     hintText: 'Cari di sini',
                     hintStyle: const TextStyle(
                       fontSize: 14,
+                      fontWeight: FontWeight.normal,
                       color: Colors.grey,
                     ),
                     border: OutlineInputBorder(
@@ -220,7 +223,6 @@ class _HomePage2State extends State<HomePage2> {
                 ),
               ),
             ),
-            const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Container(
@@ -314,7 +316,7 @@ class _HomePage2State extends State<HomePage2> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -331,32 +333,27 @@ class _HomePage2State extends State<HomePage2> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildCategoryIcon(Icons.store, 'Produk', () {
+                  _buildCategoryCard(Icons.store, 'Produk', () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const ListProduct()),
+                        builder: (context) => const ListProduct(),
+                      ),
                     );
                   }),
-                  // _buildCategoryIcon(Icons.receipt_long, 'Pesanan', () {
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(builder: (context) => ListPesananPage()),
-                  //   );
-                  // }),
-                  _buildCategoryIcon(Icons.inventory, 'Bahan Baku', () {
+                  _buildCategoryCard(Icons.inventory, 'Bahan Baku', () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ListStokBahan()),
                     );
                   }),
-                  _buildCategoryIcon(Icons.person_search, 'Pengguna', () {
+                  _buildCategoryCard(Icons.person_search, 'Pengguna', () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => ListPengguna()),
                     );
                   }),
-                  _buildCategoryIcon(Icons.account_balance_wallet, 'Keuangan',
+                  _buildCategoryCard(Icons.account_balance_wallet, 'Keuangan',
                       () {
                     Navigator.push(
                       context,
@@ -365,6 +362,59 @@ class _HomePage2State extends State<HomePage2> {
                     );
                   }),
                 ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: FutureBuilder<Map<String, dynamic>>(
+                future: _statsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return const Center(child: Text('Terjadi kesalahan'));
+                  } else if (snapshot.hasData) {
+                    final stats = snapshot.data!;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Statistik',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildStatCard(
+                              'Pesanan',
+                              stats['pendingOrders'].toString(),
+                              Icons.pending_actions,
+                              const Color(
+                                  0xFFFFA726), // Warna oranye yang lebih terang
+                            ),
+                            _buildStatCard(
+                              'Total Produk',
+                              stats['totalProduk'].toString(),
+                              Icons.shopping_bag,
+                              const Color(0xFF42A5F5), // Biru muda
+                            ),
+                            _buildStatCard(
+                              'Customer',
+                              stats['totalCustomer'].toString(),
+                              Icons.people,
+                              const Color(0xFF66BB6A), // Hijau
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  } else {
+                    return const Center(child: Text('Data tidak tersedia'));
+                  }
+                },
               ),
             ),
           ],
@@ -385,4 +435,84 @@ class _HomePage2State extends State<HomePage2> {
       ),
     );
   }
+}
+
+Widget _buildStatCard(String title, String count, IconData icon, Color color) {
+  return Expanded(
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 32, color: color),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            count,
+            style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+                fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// Fungsi untuk membuat kategori dengan ikon bulat
+Widget _buildCategoryCard(IconData icon, String title, Function onTap) {
+  return GestureDetector(
+    onTap: () => onTap(),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16), // Padding lebih besar untuk ikon
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.2), // Soft color untuk ikon
+            shape: BoxShape.circle, // Bentuk lingkaran
+          ),
+          child: Icon(icon,
+              size: 32, color: Colors.black), // Ukuran ikon lebih besar
+        ),
+        const SizedBox(height: 12), // Spasi antara ikon dan teks
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14, // Ukuran teks lebih kecil
+            fontWeight: FontWeight.w500,
+            color: Colors.black87, // Warna teks lebih lembut
+          ),
+        ),
+      ],
+    ),
+  );
 }

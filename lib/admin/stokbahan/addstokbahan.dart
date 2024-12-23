@@ -58,6 +58,7 @@ class _AddStokBahanState extends State<AddStokBahan> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Stok bahan berhasil ditambahkan!'),
+            backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
         );
@@ -89,7 +90,8 @@ class _AddStokBahanState extends State<AddStokBahan> {
             Navigator.pop(context); // Kembali ke halaman sebelumnya
           },
         ),
-        title: const Text('Tambah Stok Bahan', style: TextStyle(fontSize: 18)),
+        title: const Text('Tambah Stok Bahan',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
         backgroundColor: const Color(0xFF67C4A7),
       ),
       body: Padding(
@@ -168,7 +170,11 @@ class _AddStokBahanState extends State<AddStokBahan> {
                 items: _units.map<DropdownMenuItem<String>>((String unit) {
                   return DropdownMenuItem<String>(
                     value: unit,
-                    child: Text(unit),
+                    child: Text(
+                      unit,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.normal),
+                    ),
                   );
                 }).toList(),
                 isExpanded: true,
@@ -225,11 +231,16 @@ class _AddStokBahanState extends State<AddStokBahan> {
                 child: ElevatedButton(
                   onPressed: _saveStock,
                   // ignore: sort_child_properties_last
-                  child: const Text('Simpan'),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF67C4A7), // Button color
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 15),
+                        horizontal: 60,
+                        vertical:
+                            20), // Adjust padding to make the button wider
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),

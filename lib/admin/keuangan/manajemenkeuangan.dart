@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'crud_manajemenkeuangan.dart'; // Pastikan file UnexpectedExpenseScreen diimpor
 import 'package:url_launcher/url_launcher.dart';
@@ -104,7 +105,7 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
       appBar: AppBar(
         title: const Text(
           "Manajemen Keuangan",
-          style: TextStyle(fontSize: 18),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
         ),
         actions: [
           IconButton(
@@ -119,14 +120,35 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
         padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 80.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [ 
+          children: [
             const SizedBox(height: 20),
             DropdownButton<String>(
               value: _filter,
-              items: const[
-                DropdownMenuItem(value: "daily", child: Text("Harian")),
-                DropdownMenuItem(value: "weekly", child: Text("Mingguan")),
-                DropdownMenuItem(value: "monthly", child: Text("Bulanan")),
+              items: const [
+                DropdownMenuItem(
+                  value: "daily",
+                  child: Text(
+                    "Harian",
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "weekly",
+                  child: Text(
+                    "Mingguan",
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "monthly",
+                  child: Text(
+                    "Bulanan",
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+                  ),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -150,17 +172,20 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                         const Text("Pemasukan"),
                         Text("Rp ${_totalIncome.toStringAsFixed(0)}"),
                         Text("(${_getFilterLabel()})",
-                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     Column(
                       children: [
-                        const Icon(Icons.arrow_upward, color: Colors.red, size: 30),
+                        const Icon(Icons.arrow_upward,
+                            color: Colors.red, size: 30),
                         const SizedBox(height: 5),
                         const Text("Pengeluaran"),
                         Text("Rp ${_totalExpense.toStringAsFixed(0)}"),
                         Text("(${_getFilterLabel()})",
-                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     Column(
@@ -172,7 +197,8 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                         Text(
                             "Rp ${(_totalIncome - _totalExpense).toStringAsFixed(0)}"),
                         Text("(${_getFilterLabel()})",
-                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ],
@@ -219,9 +245,16 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
               itemBuilder: (context, index) {
                 final item = data[index];
                 return ListTile(
-                  title: Text(item['description']),
-                  subtitle: Text(item['date']),
-                  trailing: Text("Rp ${item['amount']}"),
+                  title: Text(
+                    item['description'],
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold), // Memperkecil ukuran font
+                  ),
+                  subtitle: Text(
+                    DateFormat('dd mmmm yyyy').format(DateTime.parse(
+                        item['date'])), // Mengubah format tanggal
+                  ),
+                  trailing: Text("Rp ${item['amount']}", style: TextStyle(fontSize: 16),),
                 );
               },
             ),

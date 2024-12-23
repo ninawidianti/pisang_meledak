@@ -51,20 +51,16 @@ class _LoginPageState extends State<LoginPage> {
         var data = json.decode(response.body);
 
         if (data['access_token'] != null) {
-          // Save token and user id in SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('access_token', data['access_token']);
-          await prefs.setInt('user_id', data['user']['id']); // Save user ID
+          await prefs.setInt('user_id', data['user']['id']);
+          await prefs.setString('role', data['user']['role']); // Simpan role
+          await prefs.setString(
+              'name', data['user']['name']); // Simpan nama pengguna
 
-          // Print success, token, and user ID
-          print('Login successful, Token: ${data['access_token']}');
-          print('User ID: ${data['user']['id']}'); // Debugging purpose
-
-          // Check the user's role
+          // Navigasi berdasarkan role
           String role = data['user']['role'];
-          String userName = data['user']['name']; // Save user's name
-
-          // Navigate to respective homepage based on role
+          String userName = data['user']['name'];
           if (role == 'admin') {
             Navigator.pushReplacement(
               context,

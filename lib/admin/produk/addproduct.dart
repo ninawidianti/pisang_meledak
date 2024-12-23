@@ -22,91 +22,96 @@ class _AddProductState extends State<AddProduct> {
   final TextEditingController _image_urlController = TextEditingController();
   String _errorMessage = '';
   // ignore: unused_field
-  bool _isLoading = false; 
-  
+  bool _isLoading = false;
+
   // Function to send the product data to the backend
   Future<void> _saveProduct() async {
-  setState(() {
-    _isLoading = true;  // Show loading indicator
-    _errorMessage = '';  // Clear any previous error message
-  });
-
-  const String apiUrl = 'http://127.0.0.1:8000/api/products/create'; // Replace with your backend URL
-
-  // Validation
-  if (_nameController.text.isEmpty ||
-      _priceController.text.isEmpty ||
-      _descriptionController.text.isEmpty ||
-      _image_urlController.text.isEmpty) {
     setState(() {
-      _errorMessage = 'Semua field harus diisi!';
-      _isLoading = false;  // Stop loading
+      _isLoading = true; // Show loading indicator
+      _errorMessage = ''; // Clear any previous error message
     });
-    return;
-  }
 
-  try {
-    final token = await AuthService().getToken(); // Ambil token dari AuthService
+    const String apiUrl =
+        'http://127.0.0.1:8000/api/products/create'; // Replace with your backend URL
 
-    // Prepare the data to send
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token', // Sertakan token dalam header
-      },
-      body: jsonEncode({
-        'name': _nameController.text,
-        'price': double.parse(_priceController.text),  // Assuming the price is a number
-        'description': _descriptionController.text,
-        'image_url': _image_urlController.text,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      // If the server returns a 201 CREATED response, then the product was successfully created
-      final responseData = json.decode(response.body);
-      // ignore: avoid_print
-      print('Product created: $responseData');
-
-      // Clear the input fields after saving
-      _nameController.clear();
-      _priceController.clear();
-      _descriptionController.clear();
-      _image_urlController.clear();
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Produk berhasil ditambahkan!'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      // Navigate back to the ListProduct screen
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const ListProduct()),
-        (route) => false,  // Remove all previous routes
-      );
-    } else {
-      // If the server returns an error, show the error message
+    // Validation
+    if (_nameController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _descriptionController.text.isEmpty ||
+        _image_urlController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Gagal menambahkan produk. Status Code: ${response.statusCode}';
+        _errorMessage = 'Semua field harus diisi!';
+        _isLoading = false; // Stop loading
+      });
+      return;
+    }
+
+    try {
+      final token =
+          await AuthService().getToken(); // Ambil token dari AuthService
+
+      // Prepare the data to send
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token', // Sertakan token dalam header
+        },
+        body: jsonEncode({
+          'name': _nameController.text,
+          'price': double.parse(
+              _priceController.text), // Assuming the price is a number
+          'description': _descriptionController.text,
+          'image_url': _image_urlController.text,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        // If the server returns a 201 CREATED response, then the product was successfully created
+        final responseData = json.decode(response.body);
+        // ignore: avoid_print
+        print('Product created: $responseData');
+
+        // Clear the input fields after saving
+        _nameController.clear();
+        _priceController.clear();
+        _descriptionController.clear();
+        _image_urlController.clear();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Produk berhasil ditambahkan!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+    
+
+        // Navigate back to the ListProduct screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ListProduct()),
+          (route) => false, // Remove all previous routes
+        );
+      } else {
+        // If the server returns an error, show the error message
+        setState(() {
+          _errorMessage =
+              'Gagal menambahkan produk. Status Code: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Terjadi kesalahan: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false; // Stop loading
       });
     }
-  } catch (e) {
-    setState(() {
-      _errorMessage = 'Terjadi kesalahan: $e';
-    });
-  } finally {
-    setState(() {
-      _isLoading = false;  // Stop loading
-    });
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +119,7 @@ class _AddProductState extends State<AddProduct> {
       appBar: AppBar(
         title: const Text(
           'Tambah Produk',
-          style: TextStyle(fontSize: 18),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
         ),
         backgroundColor: const Color(0xFF67C4A7),
       ),
@@ -323,15 +328,21 @@ class _AddProductState extends State<AddProduct> {
                 child: ElevatedButton(
                   onPressed: _saveProduct,
                   // ignore: sort_child_properties_last
-                  child: const Text('Simpan'),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(
+                        color: Colors.white), // Set font color to white
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF67C4A7), // Button color
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 15),
+                        horizontal: 60,
+                        vertical:
+                            20), // Adjust padding to make the button wider
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),

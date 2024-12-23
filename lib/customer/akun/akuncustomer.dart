@@ -61,7 +61,7 @@ class _AccountPageState extends State<AccountPage> {
       // Navigasi ke halaman login dan hapus semua halaman sebelumnya dari tumpukan
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
+        MaterialPageRoute(builder: (context) => const LoginPage()),
         (route) => false, // Menghapus semua rute sebelumnya
       );
     }
@@ -80,7 +80,9 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Akun Saya"),
+        backgroundColor: const Color(0xFF67C4A7),
+        title: const Text("Akun Saya",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
         // leading: IconButton(  // HAPUS BAGIAN INI
         //   icon: const Icon(Icons.arrow_back),
         //   onPressed: () => Navigator.pop(context),
@@ -91,20 +93,20 @@ class _AccountPageState extends State<AccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Halo, $userName", style: const TextStyle(fontSize: 24)),
+            Text("Halo, $userName", style: const TextStyle(fontSize: 20)),
             Text(
               userEmail ??
                   "Email tidak ditemukan", // Tampilkan email di bawah nama
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const Divider(height: 30, thickness: 1),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("Pengaturan"),
-              subtitle: const Text("Edit profil dan notifikasi"),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: _openSettings,
-            ),
+            // ListTile(
+            //   leading: const Icon(Icons.settings),
+            //   title: const Text("Pengaturan"),
+            //   subtitle: const Text("Edit profil dan notifikasi"),
+            //   trailing: const Icon(Icons.arrow_forward_ios),
+            //   onTap: _openSettings,
+            // ),
             ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text("Logout"),
@@ -179,8 +181,11 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pengaturan"),
-        backgroundColor: Colors.white,
+        title: const Text(
+          "Pengaturan",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+        ),
+        backgroundColor: const Color(0xFF67C4A7),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -192,8 +197,10 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Personal Information',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Personal Informasi',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             TextField(
               controller: _nameController,
@@ -211,52 +218,44 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Password',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Password',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: "************",
-                suffixText: 'Change',
                 border: OutlineInputBorder(),
+                suffixText: 'Change',
+                suffixStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            const Text('Notifications',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SwitchListTile(
-              title: const Text('Sales'),
-              value: salesNotifications,
-              onChanged: (bool value) {
-                setState(() {
-                  salesNotifications = value;
-                });
-              },
-            ),
-            SwitchListTile(
-              title: const Text('New arrivals'),
-              value: newArrivalsNotifications,
-              onChanged: (bool value) {
-                setState(() {
-                  newArrivalsNotifications = value;
-                });
-              },
-            ),
-            SwitchListTile(
-              title: const Text('Status Delivery'),
-              value: statusDeliveryNotifications,
-              onChanged: (bool value) {
-                setState(() {
-                  statusDeliveryNotifications = value;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveChanges,
-              child: const Text("Simpan"),
+            const SizedBox(height: 30),
+            Center(
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _saveChanges,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF67C4A7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(4), // Sedikit melengkung
+                    ),
+                  ),
+                  child: const Text(
+                    "Simpan",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

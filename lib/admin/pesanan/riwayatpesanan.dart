@@ -100,7 +100,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Pesanan', style: TextStyle(fontSize: 18  )),
+        title: const Text('Riwayat Pesanan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
         backgroundColor: const Color(0xFF67C4A7),
         actions: [
           IconButton(

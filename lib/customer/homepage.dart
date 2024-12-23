@@ -8,6 +8,7 @@ import 'package:pisang_meledak/customer/pesanan/riwayat.dart';
 import 'package:pisang_meledak/customer/produk/detailproduk.dart';
 import 'package:pisang_meledak/customer/produk/keranjang.dart';
 import 'package:pisang_meledak/service/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,11 +30,85 @@ class _HomePageState extends State<HomePage> {
   bool isLoading = true;
   bool isError = false;
   int _selectedIndex = 0;
+  String? name = "";
+  List<Map<String, dynamic>> orders = [];
 
   @override
   void initState() {
     super.initState();
     fetchProducts(); // Fetch products on init
+    fetchUserData();
+    fetchOrderData();
+  }
+
+  // Fungsi untuk mengambil nama pengguna dari backend
+  Future<void> fetchUserData() async {
+    // Ambil token dari shared_preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+
+    if (token != null) {
+      final response = await http.get(
+        Uri.parse(
+            'http://127.0.0.1:8000/api/homepage'), // Ganti dengan URL API Anda
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          name = data['name']; // Ambil nama pengguna
+        });
+      } else {
+        // Tangani error jika token tidak valid atau ada masalah lainnya
+        print('Failed to load user data');
+      }
+    } else {
+      print('No token found');
+    }
+  }
+
+// Fungsi untuk mengambil order_id dan total_price
+  Future<void> fetchOrderData() async {
+    // Ambil token dari shared_preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+
+    if (token != null) {
+      final response = await http.get(
+        Uri.parse(
+            'http://127.0.0.1:8000/api/homepage'), // Ganti dengan URL API Anda
+        headers: {
+          'Authorization': 'Bearer $token', // Mengirim token untuk autentikasi
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Memeriksa apakah response berisi daftar orders
+        if (data is List) {
+          setState(() {
+            orders = List<Map<String, dynamic>>.from(
+                data); // Menyimpan daftar orders yang valid
+          });
+        } else {
+          // Jika response tidak dalam format daftar, tampilkan pesan error
+          print('Invalid response format: $data');
+        }
+      } else if (response.statusCode == 404) {
+        // Jika tidak ada pesanan ditemukan
+        print('No pending orders found for today');
+      } else {
+        // Tangani error lain
+        print(
+            'Failed to load orders data, Status code: ${response.statusCode}');
+      }
+    } else {
+      print('No token found');
+    }
   }
 
   Future<void> fetchProducts() async {
@@ -149,8 +224,7 @@ class _HomePageState extends State<HomePage> {
               image_url: image_url,
               name: name,
               price: price,
-              description: description,
-              numberOfPurchases: 0, // Atau ganti dengan data yang sesuai
+              description: description, // Atau ganti dengan data yang sesuai
             ),
           ),
         );
@@ -242,29 +316,29 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF67C4A7),
         title: const Text(
           "Pisang Meledak",
           style: TextStyle(
               color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const CartPage(),
-          //       ),
-          //     );
-          //   },
-          //   icon: const Icon(Icons.shopping_cart, color: Colors.black),
-          // ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications, color: Colors.black),
-          ),
-        ],
+        //actions: [
+        // IconButton(
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (context) => const CartPage(),
+        //       ),
+        //     );
+        //   },
+        //   icon: const Icon(Icons.shopping_cart, color: Colors.black),
+        // ),
+        // IconButton(
+        //   onPressed: () {},
+        //   icon: const Icon(Icons.notifications, color: Colors.black),
+        // ),
+        //],
       ),
       body: isLoading
           ? const Center(
@@ -318,8 +392,8 @@ class _HomePageState extends State<HomePage> {
                             itemBuilder: (context, index) {
                               List<String> imagePaths = [
                                 'lib/assets/homepage1.png',
-                                'lib/assets/homepage2.png',
                                 'lib/assets/homepage3.png',
+                                'lib/assets/homepage2.png',
                                 'lib/assets/homepage1.png',
                               ];
 
@@ -343,26 +417,22 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Container(
                           width: double.infinity, // Membuat lebar penuh
-                          height: 110, // Mengubah tinggi menjadi 80
+                          height: 110, // Mengubah tinggi menjadi 110
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             gradient: LinearGradient(
                               colors: [
-                                const Color(0xFF67C4A7)
-                                    .withOpacity(0.8), // Membuat lebih deep
-                                const Color(0xFF8BC34A)
-                                    .withOpacity(0.8), // Membuat lebih deep
+                                const Color(0xFF67C4A7).withOpacity(0.8),
+                                const Color(0xFF8BC34A).withOpacity(0.8),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                           ),
                           child: Row(
-                            // Menggunakan Row untuk menempatkan ilustrasi dan teks
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                // Menggunakan Expanded untuk menempatkan teks dan tombol di sisi kiri
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,9 +443,9 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         'Kirim bukti pembayaran kamu',
                                         style: TextStyle(
-                                          fontSize: 14, // Adjusted font size
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                         textAlign: TextAlign.left,
                                       ),
@@ -386,35 +456,51 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         'Jln. Dr.Moh Hatta, Binuang Kp.Dalam',
                                         style: TextStyle(
-                                          fontSize: 11, // Adjusted font size
+                                          fontSize: 11,
                                           fontWeight: FontWeight.normal,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                         textAlign: TextAlign.left,
                                       ),
                                     ),
-                                    const SizedBox(
-                                        height:
-                                            4), // Spacing between the address and the button
+                                    const SizedBox(height: 4),
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(
                                           16, 8, 16, 10),
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          // Open WhatsApp
-                                          String url =
-                                              "https://wa.me/6281372114967"; // Replace with your WhatsApp number
-                                          // ignore: deprecated_member_use
-                                          launch(url);
+                                          if (name != null &&
+                                              orders.isNotEmpty) {
+                                            // Ambil order_id dan total_price dari pesanan pertama (atau sesuaikan dengan order yang diinginkan)
+                                            String orderId = orders[0]
+                                                    ['order_id']
+                                                .toString(); // Ganti index jika perlu
+                                            String totalPrice = orders[0]
+                                                    ['total_price']
+                                                .toString(); // Ganti sesuai dengan struktur data Anda
+
+                                            // Membuat pesan WhatsApp
+                                            String message = Uri.encodeComponent(
+                                                "Halo! Saya ${name!}, pelanggan Anda. Saya ingin mengirimkan bukti pembayaran untuk pesanan saya. Berikut adalah detail pesanan saya:\n\n"
+                                                "Order ID     : $orderId\n"
+                                                "Total Harga  : Rp $totalPrice\n\n"
+                                                "Mohon bantuannya untuk proses lebih lanjut. Terima kasih banyak!");
+
+                                            // URL WhatsApp dengan pesan yang sudah disiapkan
+                                            String url =
+                                                "https://wa.me/6281372114967?text=$message"; // Ganti nomor WhatsApp sesuai kebutuhan
+
+                                            // Ignore deprecated warning for launch (pastikan Anda sudah menggunakan package yang sesuai)
+                                            launch(url);
+                                          }
                                         },
-                                        // ignore: sort_child_properties_last
                                         child: const Text(
                                           'Hubungi Sekarang',
                                           style: TextStyle(color: Colors.white),
                                         ),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                              0xFF2A7C5B), // Green color
+                                          backgroundColor:
+                                              const Color(0xFF2A7C5B),
                                           elevation: 0,
                                         ),
                                       ),
@@ -422,10 +508,8 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              // Menambahkan ilustrasi di sebelah kanan
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    right: 16), // Spasi antara teks dan gambar
+                                padding: const EdgeInsets.only(right: 16),
                                 child: Image.asset(
                                   './lib/assets/ilustrasi.png',
                                   height: 70,
@@ -437,6 +521,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 20),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),

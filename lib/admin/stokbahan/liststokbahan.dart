@@ -36,7 +36,7 @@ class _ListStokBahanState extends State<ListStokBahan> {
 
   // Function to open PDF in browser
   Future<void> openPDFInBrowser() async {
-    const url = 'http://127.0.0.1:8000/stokbahan/pdf';
+    const url = 'http://localhost:8000/stokbahan/pdf';
     // ignore: deprecated_member_use
     if (await canLaunch(url)) {
       // ignore: deprecated_member_use
@@ -179,7 +179,8 @@ class _ListStokBahanState extends State<ListStokBahan> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stok Bahan', style: TextStyle(fontSize: 18)),
+        title: const Text('Stok Bahan', style: TextStyle(
+              color: Colors.black, fontSize: 18, fontWeight: FontWeight.normal)),
         actions: [
           IconButton(
             icon: const Icon(Icons.download),

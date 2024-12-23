@@ -117,6 +117,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
     // ignore: prefer_const_declarations
     final snackBar = const SnackBar(
       content: Text('Pesanan Anda sedang diproses!'),
+      backgroundColor: Colors.green,
       duration: Duration(seconds: 2),
     );
 
@@ -167,7 +168,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.normal)),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF67C4A7),
         iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
       ),
@@ -214,7 +215,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
             const SizedBox(height: 20),
             if (selectedPaymentMethod == 'Bank Transfer')
               const Text(
-                'Nomor Rekening: 123-456-7890 (Nama Pemilik)',
+                'Nomor Rekening: 123-456-7890 (Basmida Laia)',
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
             const SizedBox(height: 20),

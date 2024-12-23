@@ -118,7 +118,7 @@ class _ListProductState extends State<ListProduct> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Edit Produk'),
+          title: const Text('Edit Produk', style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -174,7 +174,7 @@ class _ListProductState extends State<ListProduct> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Konfirmasi Penghapusan"),
+          title: const Text("Konfirmasi Penghapusan", style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),),
           content: const Text("Apakah Anda yakin ingin menghapus produk ini?"),
           actions: <Widget>[
             TextButton(
@@ -340,7 +340,7 @@ class _ListProductState extends State<ListProduct> {
             Navigator.pop(context); // Kembali ke halaman sebelumnya
           },
         ),
-        title: const Text('Produk', style: TextStyle(fontSize: 18)),
+        title: const Text('Produk', style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
         backgroundColor: const Color(0xFF67C6A3),
       ),
       body: isLoading

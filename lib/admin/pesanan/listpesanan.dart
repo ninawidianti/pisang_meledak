@@ -128,7 +128,7 @@ class _ListPesananPageState extends State<ListPesananPage>
                   'delivery_method': orderDetails['delivery_method'],
                   'address': orderDetails['address'],
                   'total_price': orderDetails['total_price'],
-                  'user_name': userName, 
+                  'user_name': userName,
                   'order_id': orderDetails['id'],
                 },
                 orderItems: itemsWithProductDetails,
@@ -226,7 +226,7 @@ class _ListPesananPageState extends State<ListPesananPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Pesanan', style: TextStyle(fontSize: 18)),
+        title: const Text('Daftar Pesanan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal)),
         backgroundColor: const Color(0xFF67C4A7),
       ),
       body: isLoadingOrders
@@ -236,7 +236,7 @@ class _ListPesananPageState extends State<ListPesananPage>
                 TabBar(
                   controller: _tabController,
                   labelStyle: const TextStyle(
-                    fontSize: 12, // Ukuran font kecil
+                    fontSize: 14, // Ukuran font kecil
                     fontWeight: FontWeight.normal, // Tidak bold
                   ),
                   unselectedLabelStyle: const TextStyle(
@@ -343,7 +343,7 @@ class OrderList extends StatelessWidget {
                         Text(
                           'Order ID: ${order['id']}',
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -351,7 +351,7 @@ class OrderList extends StatelessWidget {
                         Text(
                           'Nama: ${order['user_name']}',
                           style:
-                              const TextStyle(fontSize: 14, color: Colors.grey),
+                              const TextStyle(fontSize: 14, color: Colors.black),
                         ),
                         Text(
                           'Total Harga: Rp ${order['total_price']}',
@@ -359,6 +359,11 @@ class OrderList extends StatelessWidget {
                               const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                         const SizedBox(height: 12),
+                        Text(
+                          'Tanggal Order: ${order['created_at'].substring(8, 10)}-${order['created_at'].substring(5, 7)}-${order['created_at'].substring(0, 4)}',
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
                         Text(
                           'Status: ${order['status']}',
                           style: TextStyle(
@@ -447,7 +452,7 @@ class OrderDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Detail Pesanan',
-          style: TextStyle(fontSize: 18),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
         ),
         backgroundColor: const Color(0xFF67C4A7),
       ),
@@ -469,70 +474,72 @@ class OrderDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Order ID
+            //Order ID
             // Row(
             //   children: [
-            //     const Icon(Icons.confirmation_number, color: Colors.black54),
+            //     const Icon(Icons.pending_actions, color: Colors.orange),
             //     const SizedBox(width: 8),
             //     Expanded(
             //       child: Row(
             //         children: [
             //           const Text(
-            //             'Order ID: ',
-            //             style: TextStyle(fontSize: 16, color: Colors.black87),
+            //             'Status: ',
+            //             style: TextStyle(fontSize: 14, color: Colors.black),
             //           ),
             //           Text(
-            //             '${orderDetails['id']}',
-            //             style: const TextStyle(
-            //                 fontSize: 16, color: Colors.black87),
+            //             '${orderDetails['status']}',
+            //             style:
+            //                 const TextStyle(fontSize: 14, color: Colors.black),
             //           ),
             //         ],
             //       ),
             //     ),
             //   ],
             // ),
-            // const SizedBox(height: 10),
+            // const SizedBox(height: 5),
 
-            // Nama Pemesan
-            Row(
-              children: [
-                const Icon(Icons.person, color: Colors.black54),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Text(
-                        'Nama: ',
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
-                      ),
-                      Text(
-                        '${orderDetails['user_name']}',
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.black87),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            //Tanggal Pemesan
+            // Row(
+            //   children: [
+            //     const Icon(Icons.calendar_month, color: Colors.greenAccent),
+            //     const SizedBox(width: 8),
+            //     Expanded(
+            //       child: Row(
+            //         children: [
+            //           const Text(
+            //             'Tanggal Order: ',
+            //             style: TextStyle(fontSize: 14, color: Colors.black87),
+            //           ),
+            //           Text(
+            //             '${orderDetails['created_at'].substring(8, 10)}-${orderDetails['created_at'].substring(5, 7)}-${orderDetails['created_at'].substring(0, 4)}',
+            //             style: const TextStyle(
+            //               fontSize: 14,
+            //               color: Colors.black87,
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 10),
 
             // Metode Pembayaran
             Row(
               children: [
-                const Icon(Icons.payment, color: Colors.black54),
+                const Icon(Icons.payment, color: Colors.blue),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Row(
                     children: [
                       const Text(
                         'Metode Pembayaran: ',
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                        style: TextStyle(fontSize: 14, color: Colors.black),
                       ),
                       Text(
                         '${orderDetails['payment_method']}',
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.black54),
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.black),
                       ),
                     ],
                   ),
@@ -544,19 +551,19 @@ class OrderDetailPage extends StatelessWidget {
             // Metode Pengiriman
             Row(
               children: [
-                const Icon(Icons.local_shipping, color: Colors.black54),
+                const Icon(Icons.local_shipping, color: Colors.brown),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Row(
                     children: [
                       const Text(
                         'Metode Pengiriman: ',
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                        style: TextStyle(fontSize: 14, color: Colors.black),
                       ),
                       Text(
                         '${orderDetails['delivery_method']}',
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.black54),
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.black),
                       ),
                     ],
                   ),
@@ -568,19 +575,19 @@ class OrderDetailPage extends StatelessWidget {
             // Alamat Pengiriman
             Row(
               children: [
-                const Icon(Icons.location_on, color: Colors.black54),
+                const Icon(Icons.location_on, color: Colors.red),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Row(
                     children: [
                       const Text(
                         'Alamat: ',
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                        style: TextStyle(fontSize: 14, color: Colors.black),
                       ),
                       Text(
                         '${orderDetails['address']}',
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.black54),
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.black),
                       ),
                     ],
                   ),
@@ -592,7 +599,7 @@ class OrderDetailPage extends StatelessWidget {
             // Total Harga
             Row(
               children: [
-                const Icon(Icons.attach_money, color: Colors.black54),
+                const Icon(Icons.attach_money, color: Colors.yellow),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Row(
@@ -600,7 +607,7 @@ class OrderDetailPage extends StatelessWidget {
                       const Text(
                         'Total Harga: ',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -608,7 +615,7 @@ class OrderDetailPage extends StatelessWidget {
                       Text(
                         'Rp ${orderDetails['total_price']}',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),

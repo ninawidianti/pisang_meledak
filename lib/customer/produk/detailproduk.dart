@@ -13,7 +13,6 @@ class DetailProduct extends StatefulWidget {
   final String name;
   final String price;
   final String description;
-  final int numberOfPurchases;
 
   // ignore: use_super_parameters
   const DetailProduct({
@@ -23,7 +22,6 @@ class DetailProduct extends StatefulWidget {
     required this.name,
     required this.price,
     required this.description,
-    required this.numberOfPurchases,
   }) : super(key: key);
 
   @override
@@ -31,7 +29,7 @@ class DetailProduct extends StatefulWidget {
 }
 
 class _DetailProductState extends State<DetailProduct> {
-  bool _isFavorite = false;
+  //bool _isFavorite = false;
   int _quantity = 1; // Inisialisasi jumlah dengan 1
 
   @override
@@ -42,7 +40,7 @@ class _DetailProductState extends State<DetailProduct> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF67C4A7),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -54,7 +52,7 @@ class _DetailProductState extends State<DetailProduct> {
           style: TextStyle(
             color: Colors.black,
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.normal,
           ),
         ),
       ),
@@ -67,7 +65,8 @@ class _DetailProductState extends State<DetailProduct> {
               height: 300,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(widget.image_url), // Gunakan NetworkImage untuk URL
+                  image: NetworkImage(
+                      widget.image_url), // Gunakan NetworkImage untuk URL
                   fit: BoxFit.cover,
                 ),
               ),
@@ -86,17 +85,17 @@ class _DetailProductState extends State<DetailProduct> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      _isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: _isFavorite ? Colors.red : Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isFavorite = !_isFavorite;
-                      });
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: Icon(
+                  //     _isFavorite ? Icons.favorite : Icons.favorite_border,
+                  //     color: _isFavorite ? Colors.red : Colors.grey,
+                  //   ),
+                  //   onPressed: () {
+                  //     setState(() {
+                  //       _isFavorite = !_isFavorite;
+                  //     });
+                  //   },
+                  // ),
                 ],
               ),
             ),
@@ -108,14 +107,10 @@ class _DetailProductState extends State<DetailProduct> {
                   Text(
                     'Rp. $formattedPrice',
                     style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    '${widget.numberOfPurchases} terjual',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
                   ),
                 ],
               ),
@@ -208,7 +203,8 @@ class _DetailProductState extends State<DetailProduct> {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Produk berhasil ditambahkan ke keranjang'),
+                          content:
+                              Text('Produk berhasil ditambahkan ke keranjang'),
                         ),
                       );
                     },
@@ -219,7 +215,10 @@ class _DetailProductState extends State<DetailProduct> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
-                    child: const Text('Masukkan ke keranjang', style: TextStyle(color: Colors.white),),
+                    child: const Text(
+                      'Masukkan ke keranjang',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
 
                   const SizedBox(width: 16), // Jarak antara tombol
