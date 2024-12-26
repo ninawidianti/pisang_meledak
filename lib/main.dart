@@ -1,16 +1,18 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:pisang_meledak/admin/homepage2.dart';
-import 'package:pisang_meledak/customer/homepage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'login.dart'; // Halaman login utama
+import 'package:pisang_meledak/splashscreen.dart';
+// import 'package:pisang_meledak/admin/homepage2.dart';
+// import 'package:pisang_meledak/customer/homepage.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'login.dart'; // Halaman login utama
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  // ignore: use_super_parameters
   const MyApp({Key? key}) : super(key: key);
 
   @override
@@ -36,58 +38,60 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+// class SplashScreen extends StatefulWidget {
+//   // ignore: use_super_parameters
+//   const SplashScreen({Key? key}) : super(key: key);
 
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
+//   @override
+//   // ignore: library_private_types_in_public_api
+//   _SplashScreenState createState() => _SplashScreenState();
+// }
 
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkLoginStatus();
-  }
+// class _SplashScreenState extends State<SplashScreen> {
+//   @override
+//   void initState() {
+//     super.initState();
+//     _checkLoginStatus();
+//   }
 
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    final role = prefs.getString('role'); // Simpan role saat login
-    final userName = prefs.getString('name');
+//   Future<void> _checkLoginStatus() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final token = prefs.getString('access_token');
+//     final role = prefs.getString('role'); // Simpan role saat login
+//     final userName = prefs.getString('name');
 
-    if (token != null) {
-      // Token ditemukan, arahkan ke halaman sesuai role
-      if (role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage2(userName: userName!),
-          ),
-        );
-      } else if (role == 'customer') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(userName: userName!),
-          ),
-        );
-      }
-    } else {
-      // Tidak ada token, arahkan ke halaman login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    }
-  }
+//     if (token != null) {
+//       // Token ditemukan, arahkan ke halaman sesuai role
+//       if (role == 'admin') {
+//         Navigator.pushReplacement(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => HomePage2(userName: userName!),
+//           ),
+//         );
+//       } else if (role == 'customer') {
+//         Navigator.pushReplacement(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => HomePage(userName: userName!),
+//           ),
+//         );
+//       }
+//     } else {
+//       // Tidak ada token, arahkan ke halaman login
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => const LoginPage()),
+//       );
+//     }
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(), // Tampilan loading
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Scaffold(
+//       body: Center(
+//         child: CircularProgressIndicator(), // Tampilan loading
+//       ),
+//     );
+//   }
+// }

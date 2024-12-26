@@ -220,7 +220,8 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
           );
         },
         backgroundColor: const Color(0xFF67C4A7),
-        child: Icon(Icons.add),
+        // ignore: sort_child_properties_last
+        child: const Icon(Icons.add),
         tooltip: "Tambah Biaya Tidak Terduga",
       ),
     );
@@ -254,7 +255,7 @@ class _ManajemenKeuanganState extends State<ManajemenKeuangan> {
                     DateFormat('dd mmmm yyyy').format(DateTime.parse(
                         item['date'])), // Mengubah format tanggal
                   ),
-                  trailing: Text("Rp ${item['amount']}", style: TextStyle(fontSize: 16),),
+                  trailing: Text("Rp ${item['amount']}", style: const TextStyle(fontSize: 16),),
                 );
               },
             ),

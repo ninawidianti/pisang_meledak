@@ -1,7 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pisang_meledak/login.dart';
 import 'package:pisang_meledak/register.dart';
+import 'package:pisang_meledak/admin/homepage2.dart';
+import 'package:pisang_meledak/customer/homepage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,6 +27,51 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
     );
+    //_checkLoginStatus();
+  }
+
+  // ignore: unused_element
+  Future<void> _checkLoginStatus() async {
+    await Future.delayed(
+        const Duration(seconds: 2)); // Splash screen tampil selama 2 detik
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
+    final role = prefs.getString('role');
+    final userName = prefs.getString('name');
+
+    if (token != null) {
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage2(userName: userName!),
+          ),
+        );
+      } else if (role == 'customer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(userName: userName!),
+          ),
+        );
+      }
+    } else {
+      // Jika tidak ada token, arahkan ke splash screen terlebih dahulu
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              const SplashScreen(), // Kembali ke splash screen
+        ),
+      );
+
+      // Setelah splash screen, arahkan ke halaman login
+      await Future.delayed(const Duration(seconds: 2));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
   }
 
   @override
@@ -89,15 +139,22 @@ class WelcomePage extends StatelessWidget {
                   children: [
                     Text(
                       'Ledakkan Mood mu,',
-                      style: TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500,),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     Text(
                       'dengan Pisang Meledak!!',
-                      style: TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500,),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
                       textAlign: TextAlign.center,
                     ),
-                       
                   ],
                 ),
                 const Spacer(flex: 1),
@@ -143,7 +200,8 @@ class WelcomePage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegisterPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const RegisterPage()),
                       );
                     },
                     child: const Text(

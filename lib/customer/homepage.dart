@@ -391,7 +391,6 @@ class _HomePageState extends State<HomePage> {
                             itemCount: 4,
                             itemBuilder: (context, index) {
                               List<String> imagePaths = [
-                                'lib/assets/homepage1.png',
                                 'lib/assets/homepage3.png',
                                 'lib/assets/homepage2.png',
                                 'lib/assets/homepage1.png',
@@ -491,9 +490,11 @@ class _HomePageState extends State<HomePage> {
                                                 "https://wa.me/6281372114967?text=$message"; // Ganti nomor WhatsApp sesuai kebutuhan
 
                                             // Ignore deprecated warning for launch (pastikan Anda sudah menggunakan package yang sesuai)
+                                            // ignore: deprecated_member_use
                                             launch(url);
                                           }
                                         },
+                                        // ignore: sort_child_properties_last
                                         child: const Text(
                                           'Hubungi Sekarang',
                                           style: TextStyle(color: Colors.white),

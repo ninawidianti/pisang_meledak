@@ -67,6 +67,7 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
+  // ignore: unused_element
   void _openSettings() {
     Navigator.push(
       context,

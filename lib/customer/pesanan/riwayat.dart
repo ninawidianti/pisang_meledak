@@ -375,6 +375,36 @@ class OrderList extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: [
+                              if (order['status'] == 'pending' &&
+                                  onCancel != null)
+                                OutlinedButton(
+                                  onPressed: () => onCancel!(order['id']),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: const BorderSide(color: Colors.red),
+                                  ),
+                                  child: const Text('Batalkan'),
+                                ),
+                              if (order['status'] == 'process' &&
+                                  onCancel != null)
+                                OutlinedButton(
+                                  onPressed: () => onCancel!(order['id']),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: const BorderSide(color: Colors.red),
+                                  ),
+                                  child: const Text('Batalkan'),
+                                ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

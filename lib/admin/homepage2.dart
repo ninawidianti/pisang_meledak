@@ -94,6 +94,7 @@ class _HomePage2State extends State<HomePage2> {
     super.dispose();
   }
 
+  // ignore: unused_element
   Widget _buildCategoryIcon(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap, // Menambahkan aksi saat ditekan

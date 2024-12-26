@@ -294,6 +294,7 @@ class _UnexpectedExpenseScreenState extends State<UnexpectedExpenseScreen> {
                   const Divider(),
                 ],
               );
+            // ignore: unnecessary_to_list_in_spreads
             }).toList(),
           ],
         ),
